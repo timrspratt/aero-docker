@@ -11,7 +11,7 @@ fi
 DOCKER_COMPOSE_PATH=docker-compose.yml
 ABSOLUTE_PATH=$PWD
 PROJECT_NAME=$(basename "$PWD")
-AERO_DOCKER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+AERO_DOCKER_PATH="$(cd "$(dirname "$(readlink "$0")")" && pwd -P)"
 
 if [ -f "$PWD/.aero/.env" ]; then
     source "$PWD/.aero/.env"
