@@ -1,0 +1,83 @@
+version: '3'
+services:
+    app:
+        build:
+            context: ./.aero/runtimes/php/7.4
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: '${WWWGROUP}'
+        image: aero/7.4
+        extra_hosts:
+            - host.docker.internal:host-gateway
+        ports:
+            - '${WEB_PORT:-80}:80'
+        networks:
+            - aero
+        volumes:
+            - '${PROJECT_PATH:-./}:/var/www/html'
+            - '${AERO_DOCKER_PATH:-.}/.aero/config/nginx.conf:/etc/nginx/sites-enabled/99-user.conf'
+            - '${AERO_DOCKER_PATH:-.}/.aero/config/php-pool.conf:/etc/php/7.4/fpm/pool.d/99-user.conf'
+            - '${AERO_DOCKER_PATH:-.}/.aero/config/php-fpm.ini:/etc/php/7.4/fpm/conf.d/99-user.ini'
+            - '${AERO_DOCKER_PATH:-.}/.aero/config/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf'
+        depends_on:
+            - db
+            - redis
+            - elasticsearch
+    db:
+        image: mariadb:latest
+        ports:
+            - '${DB_PORT:-3306}:3306'
+        environment:
+            MYSQL_USER: '${DB_USERNAME:-root}'
+            MYSQL_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        volumes:
+            - db:/var/lib/mysql
+        networks:
+            - aero
+        healthcheck:
+            test: [CMD, mysqladmin, ping]
+            retries: 3
+            timeout: 5s
+    redis:
+        image: redis:alpine
+        ports:
+            - '${REDIS_PORT:-6379}:6379'
+        volumes:
+            - redis:/data
+        networks:
+            - aero
+        healthcheck:
+            test: [CMD, redis-cli, ping]
+            retries: 3
+            timeout: 5s
+    elasticsearch:
+        image: elasticsearch:6.8.22
+        ports:
+            - '${ES_PORT:-9200}:9200'
+        environment:
+            - node.name=es01
+            - cluster.name=es-docker-cluster
+            - discovery.type=single-node
+            - bootstrap.memory_lock=true
+            - 'ES_JAVA_OPTS=-Xms${ES_MEMORY:-512}m -Xmx${ES_MEMORY:-512}m'
+        ulimits:
+            memlock: { soft: -1, hard: -1 }
+        volumes:
+            - elasticsearch:/usr/share/elasticsearch/data
+        networks:
+            - aero
+        healthcheck:
+            test: [CMD, wget, '--no-verbose', '--spider', 'http://localhost:${ES_PORT:-9200}']
+            retries: 3
+            timeout: 5s
+networks:
+    aero:
+        driver: bridge
+volumes:
+    db:
+        driver: local
+    redis:
+        driver: local
+    elasticsearch:
+        driver: local

@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+
+WHITE='\033[1;37m'
+NC='\033[0m'
+
+if ! docker info > /dev/null 2>&1; then
+    echo -e "${WHITE}Docker is not running.${NC}" >&2
+    exit 1
+fi
+
+DOCKER_COMPOSE_PATH=docker-compose.yml
+ABSOLUTE_PATH=$PWD
+PROJECT_NAME=$(basename "$PWD")
+AERO_DOCKER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if [ -f "$PWD/.aero/.env" ]; then
+    source "$PWD/.aero/.env"
+fi
+
+if [ ! -f $PWD/docker-compose.yml ]; then
+    ABSOLUTE_PATH=$AERO_DOCKER_PATH
+    DOCKER_COMPOSE_PATH="$ABSOLUTE_PATH/$DOCKER_COMPOSE"
+    
+    if [ -f "$ABSOLUTE_PATH/.aero/.env" ]; then
+        source "$ABSOLUTE_PATH/.aero/.env"
+    fi
+fi
+
+if [ -f "$PWD/.aero/.env" ]; then
+    source "$PWD/.aero/.env"
+fi
+
+export WWWUSER=${WWWUSER:-$UID}
+export WWWGROUP=${WWWGROUP:-$(id -g)}
+export PROJECT_PATH=${PROJECT_PATH:-$PWD}
+export DB_USERNAME=${DB_USERNAME:-}
+export DB_PASSWORD=${DB_PASSWORD:-}
+export DB_PORT=${DB_PORT:-}
+export WEB_PORT=${WEB_PORT:-}
+export REDIS_PORT=${REDIS_PORT:-}
+export ES_PORT=${ES_PORT:-}
+export ES_MEMORY=${ES_MEMORY:-}
+export AERO_DOCKER_PATH=${AERO_DOCKER_PATH:-.}
+
+if [ $# -gt 0 ]; then
+    if [ "$1" == "php" ]; then
+        shift 1
+        docker-compose -p $PROJECT_NAME -f $DOCKER_COMPOSE_PATH exec app php "$@"
+    elif [ "$1" == "bash" ]; then
+        shift 1
+        docker-compose -p $PROJECT_NAME -f $DOCKER_COMPOSE_PATH exec -u user app bash "$@"
+    elif [ "$1" == "new" ]; then
+        shift 1
+        DB_DATABASE=$PROJECT_NAME
+        docker-compose -p $PROJECT_NAME -f $DOCKER_COMPOSE_PATH exec db \
+            bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"CREATE DATABASE IF NOT EXISTS \\\`$DB_DATABASE\\\` CHARACTER SET utf8 COLLATE utf8_unicode_ci;\""
+        if [ $? -eq 0 ]; then
+            echo -e "${WHITE}Created database.${NC}"
+        else
+            exit 1
+        fi
+        docker-compose -p $PROJECT_NAME -f $DOCKER_COMPOSE_PATH exec -u user \
+            -e CONNECTIONS_DEFINED=true \
+            -e DB_HOST=db \
+            -e DB_DATABASE=$DB_DATABASE \
+            -e DB_USERNAME=$DB_USERNAME \
+            -e DB_PASSWORD=$DB_PASSWORD \
+            -e ELASTICSEARCH_CONNECTION=elasticsearch:9200 \
+            app bash -ic "composer global require aerocommerce/cli && aero new $PROJECT_NAME;"
+        if [ $? -eq 0 ]; then
+            shopt -s dotglob
+            mv ./$PROJECT_NAME ./__tmp
+            mv ./__tmp/* .
+            rm -rf ./__tmp
+        else
+            rm -rf ./$1
+            exit 1
+        fi
+    else
+        docker-compose -p $PROJECT_NAME -f $DOCKER_COMPOSE_PATH "$@"
+    fi
+fi
