@@ -45,7 +45,7 @@ if [ $# -gt 0 ]; then
     elif [ "$1" == "bash" ]; then
         shift 1
         docker-compose -p $PROJECT_NAME -f $DOCKER_COMPOSE_PATH exec -u user app bash "$@"
-    elif [ "$1" == "new" ]; then
+    elif [ "$1" == "install" ]; then
         shift 1
         DB_DATABASE=$PROJECT_NAME
         docker-compose -p $PROJECT_NAME -f $DOCKER_COMPOSE_PATH exec db \
