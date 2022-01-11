@@ -12,9 +12,15 @@ DOCKER_COMPOSE_PATH=docker-compose.yml
 PROJECT_NAME=$(basename "$PWD")
 AERO_DOCKER_PATH="$(cd "$(dirname "$(readlink "$0")")" && pwd -P)"
 
-if [ -f "$AERO_DOCKER_PATH/.aero/.env.example" ]; then source "$AERO_DOCKER_PATH/.aero/.env.example" fi
-if [ -f "$AERO_DOCKER_PATH/.aero/.env" ]; then source "$AERO_DOCKER_PATH/.aero/.env" fi
-if [ -f "$PWD/.aero/.env" ]; then source "$PWD/.aero/.env" fi
+if [ -f "$AERO_DOCKER_PATH/.aero/.env.example" ]; then
+    source "$AERO_DOCKER_PATH/.aero/.env.example"
+fi
+if [ -f "$AERO_DOCKER_PATH/.aero/.env" ]; then
+    source "$AERO_DOCKER_PATH/.aero/.env"
+fi
+if [ -f "$PWD/.aero/.env" ]; then
+    source "$PWD/.aero/.env"
+fi
 
 if [ ! -f $PWD/docker-compose.yml ]; then
     DOCKER_COMPOSE_PATH="$AERO_DOCKER_PATH/$DOCKER_COMPOSE"
