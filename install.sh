@@ -1,6 +1,10 @@
 #!/bin/bash
 set -o errexit
-rm -rf $HOME/.aero-docker
+AERO_DOCKER_DIR="$HOME/.aero-docker"
+if [ -f "$AERO_DOCKER_DIR/.env" ]; then
+    cp "$AERO_DOCKER_DIR/.env" "$HOME/.env.aero-docker.temp"
+fi
+rm -rf AERO_DOCKER_DIR
 mkdir -p $_
 cd $_
 git init -qqq
@@ -11,4 +15,9 @@ shopt -s dotglob
 mv compose/* ./
 rm -rf compose .git
 rm -rf /usr/local/bin/aero
+if [ -f "$HOME/.env.aero-docker.temp" ]; then
+    mv "$HOME/.env.aero-docker.temp" "$AERO_DOCKER_DIR/.env"
+else
+    cp "$AERO_DOCKER_DIR/.aero/.env.example" "$AERO_DOCKER_DIR/.env"
+fi
 ln -s $(pwd)/aero /usr/local/bin/aero

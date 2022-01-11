@@ -15,8 +15,8 @@ AERO_DOCKER_PATH="$(cd "$(dirname "$(readlink "$0")")" && pwd -P)"
 if [ -f "$AERO_DOCKER_PATH/.aero/.env.example" ]; then
     source "$AERO_DOCKER_PATH/.aero/.env.example"
 fi
-if [ -f "$AERO_DOCKER_PATH/.aero/.env" ]; then
-    source "$AERO_DOCKER_PATH/.aero/.env"
+if [ -f "$AERO_DOCKER_PATH/.env" ]; then
+    source "$AERO_DOCKER_PATH/.env"
 fi
 if [ -f "$PWD/.aero/.env" ]; then
     source "$PWD/.aero/.env"
