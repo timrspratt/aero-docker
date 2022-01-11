@@ -1,5 +1,8 @@
 #!/bin/bash
 set -o errexit
+rm -rf $HOME/.aero-docker
+mkdir -p $_
+cd $_
 git init -qqq
 git remote add origin https://github.com/timrspratt/aero-docker
 git fetch origin -qqq
