@@ -9,25 +9,15 @@ if ! docker info > /dev/null 2>&1; then
 fi
 
 DOCKER_COMPOSE_PATH=docker-compose.yml
-ABSOLUTE_PATH=$PWD
 PROJECT_NAME=$(basename "$PWD")
 AERO_DOCKER_PATH="$(cd "$(dirname "$(readlink "$0")")" && pwd -P)"
 
-if [ -f "$PWD/.aero/.env" ]; then
-    source "$PWD/.aero/.env"
-fi
+if [ -f "$AERO_DOCKER_PATH/.aero/.env.example" ]; then source "$AERO_DOCKER_PATH/.aero/.env.example" fi
+if [ -f "$AERO_DOCKER_PATH/.aero/.env" ]; then source "$AERO_DOCKER_PATH/.aero/.env" fi
+if [ -f "$PWD/.aero/.env" ]; then source "$PWD/.aero/.env" fi
 
 if [ ! -f $PWD/docker-compose.yml ]; then
-    ABSOLUTE_PATH=$AERO_DOCKER_PATH
-    DOCKER_COMPOSE_PATH="$ABSOLUTE_PATH/$DOCKER_COMPOSE"
-    
-    if [ -f "$ABSOLUTE_PATH/.aero/.env" ]; then
-        source "$ABSOLUTE_PATH/.aero/.env"
-    fi
-fi
-
-if [ -f "$PWD/.aero/.env" ]; then
-    source "$PWD/.aero/.env"
+    DOCKER_COMPOSE_PATH="$AERO_DOCKER_PATH/$DOCKER_COMPOSE"
 fi
 
 export WWWUSER=${WWWUSER:-$UID}

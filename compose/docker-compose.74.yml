@@ -15,10 +15,10 @@ services:
             - aero
         volumes:
             - '${PROJECT_PATH:-./}:/var/www/html'
-            - '${AERO_DOCKER_PATH:-.}/.aero/config/nginx.conf:/etc/nginx/sites-enabled/99-user.conf'
-            - '${AERO_DOCKER_PATH:-.}/.aero/config/php-pool.conf:/etc/php/7.4/fpm/pool.d/99-user.conf'
-            - '${AERO_DOCKER_PATH:-.}/.aero/config/php-fpm.ini:/etc/php/7.4/fpm/conf.d/99-user.ini'
-            - '${AERO_DOCKER_PATH:-.}/.aero/config/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf'
+            - '${AERO_DOCKER_PATH:-.}/.aero/runtimes/php/7.4/config/nginx.conf:/etc/nginx/sites-enabled/99-user.conf'
+            - '${AERO_DOCKER_PATH:-.}/.aero/runtimes/php/7.4/config/php-pool.conf:/etc/php/7.4/fpm/pool.d/99-user.conf'
+            - '${AERO_DOCKER_PATH:-.}/.aero/runtimes/php/7.4/config/php-fpm.ini:/etc/php/7.4/fpm/conf.d/99-user.ini'
+            - '${AERO_DOCKER_PATH:-.}/.aero/runtimes/php/7.4/config/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf'
         depends_on:
             - db
             - redis
