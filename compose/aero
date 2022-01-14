@@ -66,7 +66,7 @@ if [ -f "$PWD/.aero/.env" ]; then
     source "$PWD/.aero/.env"
 fi
 
-if [ ! -f $PWD/docker-compose.yml ]; then
+if [ ! -f "$PWD/docker-compose.yml" ]; then
     DOCKER_COMPOSE_PATH="$AERO_DOCKER_PATH/$DOCKER_COMPOSE"
 fi
 
@@ -85,7 +85,7 @@ export AERO_DOCKER_PATH=${AERO_DOCKER_PATH:-.}
 
 function ensure_container_is_running {
     PSRESULT="$(docker_compose ps -q)"
-    if docker_compose ps | grep $DOCKER_NAME | grep 'Exit'; then
+    if docker_compose ps | grep "$DOCKER_NAME" | grep 'Exit'; then
         echo -e "${WHITE}Shutting down old application containers...${NC}" >&2
 
         docker_compose down > /dev/null 2>&1
@@ -104,7 +104,7 @@ function ensure_container_is_running {
 }
 
 function docker_compose {
-    docker-compose -p $DOCKER_NAME -f $DOCKER_COMPOSE_PATH "$@"
+    docker-compose -p "$DOCKER_NAME" -f "$DOCKER_COMPOSE_PATH" "$@"
 }
 
 if [ $# -gt 0 ]; then
@@ -130,40 +130,41 @@ if [ $# -gt 0 ]; then
             exit 1
         fi
         ensure_container_is_running
-        DB_DATABASE=$PROJECT_NAME
-        docker_compose exec db \
-            bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"CREATE DATABASE IF NOT EXISTS \\\`$DB_DATABASE\\\` CHARACTER SET utf8 COLLATE utf8_unicode_ci;\""
-        if [ $? -eq 0 ]; then
+        DB_DATABASE="$PROJECT_NAME"
+        if docker_compose exec db \
+            bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"CREATE DATABASE IF NOT EXISTS \\\`$DB_DATABASE\\\` CHARACTER SET utf8 COLLATE utf8_unicode_ci;\"";
+        then
             echo -e "${WHITE}✔ Created database${NC}"
         else
             exit 1
         fi
-        docker_compose exec -u user \
+        
+        if docker_compose exec -u user \
             -e CONNECTIONS_DEFINED=true \
             -e DB_HOST=db \
-            -e DB_DATABASE=$DB_DATABASE \
-            -e DB_USERNAME=$DB_USERNAME \
-            -e DB_PASSWORD=$DB_PASSWORD \
+            -e DB_DATABASE="$DB_DATABASE" \
+            -e DB_USERNAME="$DB_USERNAME" \
+            -e DB_PASSWORD="$DB_PASSWORD" \
             -e ELASTICSEARCH_CONNECTION=elasticsearch:9200 \
-            app bash -ic "composer global require aerocommerce/cli:dev-master && aero new $PROJECT_NAME --next;"
-        if [ $? -eq 0 ]; then
+            app bash -ic "composer global require aerocommerce/cli:dev-master && aero new $PROJECT_NAME --next;";
+        then
             shopt -s dotglob
-            mv ./$PROJECT_NAME ./__tmp
+            mv "./$PROJECT_NAME" ./__tmp
             mv ./__tmp/* .
             rm -rf ./__tmp
         else
-            rm -rf ./$PROJECT_NAME
+            rm -rf "./$PROJECT_NAME"
             exit 1
         fi
     elif [ "$1" == "theme:install" ]; then
         ensure_container_is_running
         shift 1
         THEME_NAME=$2
-        if [ -z $THEME_NAME ]; then
+        if [ -z "$THEME_NAME" ]; then
             THEME_NAME=$1
         fi
         COMMAND=""
-        if ! cat composer.json | grep "aerocommerce/theme-ui" > /dev/null 2>&1; then
+        if ! < composer.json | grep "aerocommerce/theme-ui" > /dev/null 2>&1; then
             COMMAND="${COMMAND}composer require aerocommerce/theme-ui --dev;"
             COMMAND="${COMMAND}composer require aerocargo/listing-collections aerocommerce/components aerocommerce/account-area;"
         fi
@@ -177,8 +178,8 @@ if [ $# -gt 0 ]; then
         echo "Version: $AERO_DOCKER_VERSION"
         echo "Latest version: $LATEST_AERO_DOCKER_VERSION"
     elif [ "$1" == "self-update" ]; then
-        curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/master/install.sh | bash
-        if [ $? -eq 0 ]; then
+        if curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/master/install.sh | bash;
+        then
             echo -e "${WHITE}✔ Updated${NC}" >&2
         else
             echo -e "${WHITE}There was a problem updating.${NC}" >&2
