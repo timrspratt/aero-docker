@@ -3,6 +3,19 @@
 WHITE='\033[1;37m'
 NC='\033[0m'
 
+if [[ -L ${BASH_SOURCE[0]} ]]; then
+    AERO_DOCKER_PATH="$(cd "$(dirname "$(readlink "${BASH_SOURCE[0]}")")" && pwd -P)"
+else
+    AERO_DOCKER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"  
+fi
+
+AERO_DOCKER_VERSION=$(cat "$AERO_DOCKER_PATH/.version")
+LATEST_AERO_DOCKER_VERSION=$(curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/master/compose/.version 2> /dev/null)
+
+if [ "$LATEST_AERO_DOCKER_VERSION" != "$AERO_DOCKER_VERSION" ]; then
+    echo -e "${WHITE}An update is available.${NC}" >&2
+fi
+
 if ! docker info > /dev/null 2>&1; then
     echo -e "${WHITE}Docker is not running.${NC}" >&2
     exit 1
@@ -37,7 +50,11 @@ fi
 DOCKER_COMPOSE_PATH=docker-compose.yml
 PROJECT_NAME=$(basename "$PWD")
 DOCKER_NAME="aero:$PROJECT_NAME"
-AERO_DOCKER_PATH="$(cd "$(dirname "$(readlink "$0")")" && pwd -P)"
+
+if [[ "$TITLE" =~ [^a-zA-Z0-9\ ] ]]; then
+    echo -e "${WHITE}Directory name must consist of alphanumeric characters only.${NC}" >&2
+    exit 1
+fi
 
 if [ -f "$AERO_DOCKER_PATH/.aero/.env.example" ]; then
     source "$AERO_DOCKER_PATH/.aero/.env.example"
@@ -66,24 +83,58 @@ export ES_PORT=${ES_PORT:-}
 export ES_MEMORY=${ES_MEMORY:-}
 export AERO_DOCKER_PATH=${AERO_DOCKER_PATH:-.}
 
+function ensure_container_is_running {
+    PSRESULT="$(docker_compose ps -q)"
+    if docker_compose ps | grep $DOCKER_NAME | grep 'Exit'; then
+        echo -e "${WHITE}Shutting down old application containers...${NC}" >&2
+
+        docker_compose down > /dev/null 2>&1
+
+        EXEC="no"
+    elif [ -n "$PSRESULT" ]; then
+        EXEC="yes"
+    else
+        EXEC="no"
+    fi
+
+    if [ $EXEC == "no" ]; then
+        echo -e "${WHITE}The application containers must be up and running to continue:${NC} Run the command 'aero up -d' and try again" >&2
+        exit 1
+    fi
+}
+
+function docker_compose {
+    docker-compose -p $DOCKER_NAME -f $DOCKER_COMPOSE_PATH "$@"
+}
+
 if [ $# -gt 0 ]; then
     if [ "$1" == "php" ]; then
+        ensure_container_is_running
         shift 1
-        docker-compose -p $DOCKER_NAME -f $DOCKER_COMPOSE_PATH exec app php "$@"
+        docker_compose exec app php "$@"
+    elif [ "$1" == "composer" ]; then
+        ensure_container_is_running
+        shift 1
+        docker_compose exec -u user app composer "$@"
+    elif [ "$1" == "artisan" ]; then
+        ensure_container_is_running
+        shift 1
+        docker_compose exec -u user app php artisan "$@"
     elif [ "$1" == "bash" ]; then
+        ensure_container_is_running
         shift 1
-        docker-compose -p $DOCKER_NAME -f $DOCKER_COMPOSE_PATH exec -u user app bash "$@"
+        docker_compose exec -u user app bash "$@"
     elif [ "$1" == "install" ]; then
-        shift 1
+        ensure_container_is_running
         DB_DATABASE=$PROJECT_NAME
-        docker-compose -p $DOCKER_NAME -f $DOCKER_COMPOSE_PATH exec db \
+        docker_compose exec db \
             bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"CREATE DATABASE IF NOT EXISTS \\\`$DB_DATABASE\\\` CHARACTER SET utf8 COLLATE utf8_unicode_ci;\""
         if [ $? -eq 0 ]; then
             echo -e "${WHITE}Created database.${NC}"
         else
             exit 1
         fi
-        docker-compose -p $DOCKER_NAME -f $DOCKER_COMPOSE_PATH exec -u user \
+        docker_compose exec -u user \
             -e CONNECTIONS_DEFINED=true \
             -e DB_HOST=db \
             -e DB_DATABASE=$DB_DATABASE \
@@ -100,7 +151,30 @@ if [ $# -gt 0 ]; then
             rm -rf ./$PROJECT_NAME
             exit 1
         fi
+    elif [ "$1" == "theme:install" ]; then
+        ensure_container_is_running
+        shift 1
+        THEME_NAME=$2
+        if [ -z $THEME_NAME ]; then
+            THEME_NAME=$1
+        fi
+        COMMAND=""
+        if ! cat composer.json | grep "aerocommerce/theme-ui" > /dev/null 2>&1; then
+            COMMAND="${COMMAND}composer require aerocommerce/theme-ui --dev;"
+            COMMAND="${COMMAND}composer require aerocargo/listing-collections aerocommerce/components aerocommerce/account-area;"
+        fi
+        COMMAND="${COMMAND}php artisan theme:build $1 --config=vendor/aerocommerce/theme-ui/config/$THEME_NAME.yml -er;"
+        docker_compose exec -u user app bash -ic "$COMMAND"
+    elif [ "$1" == "catalog:seed" ]; then
+        ensure_container_is_running
+        docker_compose exec -u user \
+            app bash -ic "php artisan aero:import:products:csv https://aero-data.s3.eu-west-2.amazonaws.com/products.csv"
+    elif [ "$1" == "version" ]; then
+        echo "Version: $AERO_DOCKER_VERSION"
+        echo "Latest version: $LATEST_AERO_DOCKER_VERSION"
+    elif [ "$1" == "self-update" ]; then
+        curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/master/install.sh | bash
     else
-        docker-compose -p $DOCKER_NAME -f $DOCKER_COMPOSE_PATH "$@"
+        docker_compose "$@"
     fi
 fi
