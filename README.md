@@ -39,8 +39,14 @@ A global `aero` command is registered. This command should be called from within
 - `aero unpause`: Unpause the services
 - `aero restart`: Restart the services
 - `aero install`: Install an Aero store in the current directory
+- `aero theme:install`: Install a theme to the current Aero store
+- `aero catalog:seed`: Seed the sample catalog to the current Aero store
 - `aero bash`: Create a bash prompt in the main app container to execute commands
 - `aero php`: Execute a PHP command within the main app container
+- `aero artisan`: Execute an artisan command within the main app container
+- `aero composer`: Execute a Composer command within the main app container
+- `aero version`: Output the current version of Aero Docker
+- `aero self-update`: Update to the latest version of Aero Docker
 
 ## License
 

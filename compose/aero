@@ -13,7 +13,7 @@ AERO_DOCKER_VERSION=$(cat "$AERO_DOCKER_PATH/.version")
 LATEST_AERO_DOCKER_VERSION=$(curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/master/compose/.version 2> /dev/null)
 
 if [ "$LATEST_AERO_DOCKER_VERSION" != "$AERO_DOCKER_VERSION" ]; then
-    echo -e "${WHITE}An update is available.${NC}" >&2
+    echo -e "${WHITE}An update is available.${NC} Run 'aero self-update' to update to the latest version of Aero Docker." >&2
 fi
 
 if ! docker info > /dev/null 2>&1; then
@@ -49,7 +49,7 @@ fi
 
 DOCKER_COMPOSE_PATH=docker-compose.yml
 PROJECT_NAME=$(basename "$PWD")
-DOCKER_NAME="aero:$PROJECT_NAME"
+DOCKER_NAME="aero-$PROJECT_NAME"
 
 if [[ "$TITLE" =~ [^a-zA-Z0-9\ ] ]]; then
     echo -e "${WHITE}Directory name must consist of alphanumeric characters only.${NC}" >&2
@@ -98,7 +98,7 @@ function ensure_container_is_running {
     fi
 
     if [ $EXEC == "no" ]; then
-        echo -e "${WHITE}The application containers must be up and running to continue:${NC} Run the command 'aero up -d' and try again" >&2
+        echo -e "${WHITE}The application containers must be up and running to continue:${NC} Run the command 'aero up -d' and try again." >&2
         exit 1
     fi
 }
@@ -130,7 +130,7 @@ if [ $# -gt 0 ]; then
         docker_compose exec db \
             bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"CREATE DATABASE IF NOT EXISTS \\\`$DB_DATABASE\\\` CHARACTER SET utf8 COLLATE utf8_unicode_ci;\""
         if [ $? -eq 0 ]; then
-            echo -e "${WHITE}Created database.${NC}"
+            echo -e "${WHITE}✔ Created database${NC}"
         else
             exit 1
         fi
@@ -174,6 +174,12 @@ if [ $# -gt 0 ]; then
         echo "Latest version: $LATEST_AERO_DOCKER_VERSION"
     elif [ "$1" == "self-update" ]; then
         curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/master/install.sh | bash
+        if [ $? -eq 0 ]; then
+            echo -e "${WHITE}✔ Updated${NC}" >&2
+        else
+            echo -e "${WHITE}There was a problem updating.${NC}" >&2
+            exit 1
+        fi
     else
         docker_compose "$@"
     fi
