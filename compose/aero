@@ -13,7 +13,7 @@ AERO_DOCKER_VERSION=$(cat "$AERO_DOCKER_PATH/.version")
 LATEST_AERO_DOCKER_VERSION=$(curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/master/compose/.version 2> /dev/null)
 
 if [ "$LATEST_AERO_DOCKER_VERSION" != "$AERO_DOCKER_VERSION" ]; then
-    echo -e "${WHITE}An update is available.${NC} Run 'aero self-update' to update to the latest version of Aero Docker." >&2
+    echo -e "${WHITE}An update is available:${NC} Run 'aero self-update' to update to the latest version of Aero Docker." >&2
 fi
 
 if ! docker info > /dev/null 2>&1; then
