@@ -125,6 +125,10 @@ if [ $# -gt 0 ]; then
         shift 1
         docker_compose exec -u user app bash "$@"
     elif [ "$1" == "install" ]; then
+        if [ -f "$PWD/artisan" ]; then
+            echo -e "${WHITE}The current directory is already a project.${NC}"
+            exit 1
+        fi
         ensure_container_is_running
         DB_DATABASE=$PROJECT_NAME
         docker_compose exec db \
