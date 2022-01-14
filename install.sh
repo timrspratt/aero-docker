@@ -2,7 +2,7 @@
 set -o errexit
 AERO_DOCKER_DIR="$HOME/.aero-docker"
 if [ -f "$AERO_DOCKER_DIR/.env" ]; then
-    mv "$AERO_DOCKER_DIR/.env" "$HOME/.env.aero-docker.temp"
+    cp -p "$AERO_DOCKER_DIR/.env" "$HOME/.env.aero-docker.temp"
 fi
 rm -rf $AERO_DOCKER_DIR
 mkdir -p $_
@@ -16,7 +16,8 @@ mv compose/* ./
 rm -rf compose .git
 rm -rf /usr/local/bin/aero
 if [ -f "$HOME/.env.aero-docker.temp" ]; then
-    mv "$HOME/.env.aero-docker.temp" "$AERO_DOCKER_DIR/.env"
+    cp -p "$HOME/.env.aero-docker.temp" "$AERO_DOCKER_DIR/.env"
+    rm -f "$HOME/.env.aero-docker.temp"
 else
     cp "$AERO_DOCKER_DIR/.aero/.env.example" "$AERO_DOCKER_DIR/.env"
 fi
