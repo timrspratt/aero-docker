@@ -73,8 +73,8 @@ open http://localhost
 
 ## Available Commands
 
-- `aero up -d`: Create and start the containers
-- `aero down`: Stops and removes the containers
+- `aero up`: Create and start the containers. Add the `-d` flag to run the containers in the background
+- `aero down`: Stops and removes the containers. Add the `-v` flag to also remove the data volumes
 - `aero pause`: Pause the services
 - `aero unpause`: Unpause the services
 - `aero restart`: Restart the services
