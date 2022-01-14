@@ -49,7 +49,7 @@ aero up -d
 
 Once the containers are up and running, run the `aero install` command.
 During the install process, you'll need to provide project credentials, which can be obtained from
-<a href="https://agora.aerocommerce.com/projects" target="_blank">Agora</a>.
+[Agora](https://agora.aerocommerce.com/projects).
 
 ```bash
 aero install
