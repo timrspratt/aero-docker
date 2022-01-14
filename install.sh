@@ -2,7 +2,7 @@
 set -o errexit
 AERO_DOCKER_DIR="$HOME/.aero-docker"
 if [ -f "$AERO_DOCKER_DIR/.env" ]; then
-    cp "$AERO_DOCKER_DIR/.env" "$HOME/.env.aero-docker.temp"
+    mv "$AERO_DOCKER_DIR/.env" "$HOME/.env.aero-docker.temp"
 fi
 rm -rf $AERO_DOCKER_DIR
 mkdir -p $_
