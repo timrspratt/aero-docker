@@ -10,12 +10,6 @@ else
 fi
 
 AERO_DOCKER_VERSION=$(cat "$AERO_DOCKER_PATH/.version")
-LATEST_AERO_DOCKER_VERSION=$(curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/master/compose/.version 2> /dev/null)
-
-if [ "$LATEST_AERO_DOCKER_VERSION" != "$AERO_DOCKER_VERSION" ]; then
-    echo -e "${WHITE}An update is available.${NC}" >&2
-    echo "Run 'aero self-update' to update to the latest version of Aero Docker."
-fi
 
 if ! docker info > /dev/null 2>&1; then
     echo -e "${WHITE}Docker is not running.${NC}" >&2
@@ -83,6 +77,15 @@ export REDIS_PORT=${REDIS_PORT:-}
 export ES_PORT=${ES_PORT:-}
 export ES_MEMORY=${ES_MEMORY:-}
 export AERO_DOCKER_PATH=${AERO_DOCKER_PATH:-.}
+
+function update_check {
+    LATEST_AERO_DOCKER_VERSION=$(curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/master/compose/.version 2> /dev/null)
+
+    if [ "$LATEST_AERO_DOCKER_VERSION" != "$AERO_DOCKER_VERSION" ]; then
+        echo -e "${WHITE}An update is available.${NC}" >&2
+        echo "Run 'aero self-update' to update to the latest version of Aero Docker."
+    fi
+}
 
 function ensure_container_is_running {
     PSRESULT="$(docker_compose ps -q)"
@@ -178,22 +181,27 @@ function seed_catalog {
 
 if [ $# -gt 0 ]; then
     if [ "$1" == "php" ]; then
+        update_check
         ensure_container_is_running
         shift 1
         docker_compose exec app php "$@"
     elif [ "$1" == "composer" ]; then
+        update_check
         ensure_container_is_running
         shift 1
         docker_compose exec -u user app composer "$@"
     elif [ "$1" == "artisan" ]; then
+        update_check
         ensure_container_is_running
         shift 1
         docker_compose exec -u user app php artisan "$@"
     elif [ "$1" == "bash" ]; then
+        update_check
         ensure_container_is_running
         shift 1
         docker_compose exec -u user app bash "$@"
     elif [ "$1" == "install" ]; then
+        update_check
         if [ -f "$PWD/artisan" ]; then
             echo -e "${WHITE}The current directory is already a project.${NC}"
             exit 1
@@ -203,15 +211,17 @@ if [ $# -gt 0 ]; then
         install_aero "$PROJECT_NAME"
         install_theme "shadow"
     elif [ "$1" == "theme:install" ]; then
+        update_check
         ensure_container_is_running
         shift 1
         install_theme "$@"
     elif [ "$1" == "catalog:seed" ]; then
+        update_check
         ensure_container_is_running
         seed_catalog
     elif [ "$1" == "version" ]; then
+        update_check
         echo -e "${WHITE}Version: $AERO_DOCKER_VERSION${NC}" >&2
-        echo "Latest version: $LATEST_AERO_DOCKER_VERSION"
     elif [ "$1" == "self-update" ]; then
         if curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/master/install.sh | bash;
         then
