@@ -11,7 +11,7 @@ ENV TZ=UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt-get update \
-    && apt-get install -y gnupg gosu curl ca-certificates zip unzip git vim supervisor sqlite3 libcap2-bin libpng-dev python2 nginx \
+    && apt-get install -y gnupg gosu curl ca-certificates zip unzip git vim supervisor cron sqlite3 libcap2-bin libpng-dev python2 nginx \
     && mkdir -p ~/.gnupg \
     && chmod 600 ~/.gnupg \
     && echo "disable-ipv6" >> ~/.gnupg/dirmngr.conf \

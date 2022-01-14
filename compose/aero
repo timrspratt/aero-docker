@@ -8,8 +8,35 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
+UNAMEOUT="$(uname -s)"
+
+case "${UNAMEOUT}" in
+    Linux*)             MACHINE=linux;;
+    Darwin*)            MACHINE=mac;;
+    *)                  MACHINE="UNKNOWN"
+esac
+
+if [ "$MACHINE" == "UNKNOWN" ]; then
+    echo -e "${WHITE}Unsupported operating system [$UNAMEOUT].${NC}" >&2
+    exit 1
+fi
+
+TARGETARCH=$(uname -m)
+
+case "${TARGETARCH}" in
+    x86_64*)            PLATFORM=linux/amd64;;
+    arm64*)             PLATFORM=linux/arm64/v8;;
+    *)                  PLATFORM="UNKNOWN"
+esac
+
+if [ "$PLATFORM" == "UNKNOWN" ]; then
+    echo -e "${WHITE}Unsupported chipset architecture [$TARGETARCH].${NC}" >&2
+    exit 1
+fi
+
 DOCKER_COMPOSE_PATH=docker-compose.yml
 PROJECT_NAME=$(basename "$PWD")
+DOCKER_NAME="aero:$PROJECT_NAME"
 AERO_DOCKER_PATH="$(cd "$(dirname "$(readlink "$0")")" && pwd -P)"
 
 if [ -f "$AERO_DOCKER_PATH/.aero/.env.example" ]; then
@@ -26,6 +53,7 @@ if [ ! -f $PWD/docker-compose.yml ]; then
     DOCKER_COMPOSE_PATH="$AERO_DOCKER_PATH/$DOCKER_COMPOSE"
 fi
 
+export PLATFORM=${PLATFORM}
 export WWWUSER=${WWWUSER:-$UID}
 export WWWGROUP=${WWWGROUP:-$(id -g)}
 export PROJECT_PATH=${PROJECT_PATH:-$PWD}
@@ -41,28 +69,28 @@ export AERO_DOCKER_PATH=${AERO_DOCKER_PATH:-.}
 if [ $# -gt 0 ]; then
     if [ "$1" == "php" ]; then
         shift 1
-        docker-compose -p $PROJECT_NAME -f $DOCKER_COMPOSE_PATH exec app php "$@"
+        docker-compose -p $DOCKER_NAME -f $DOCKER_COMPOSE_PATH exec app php "$@"
     elif [ "$1" == "bash" ]; then
         shift 1
-        docker-compose -p $PROJECT_NAME -f $DOCKER_COMPOSE_PATH exec -u user app bash "$@"
+        docker-compose -p $DOCKER_NAME -f $DOCKER_COMPOSE_PATH exec -u user app bash "$@"
     elif [ "$1" == "install" ]; then
         shift 1
         DB_DATABASE=$PROJECT_NAME
-        docker-compose -p $PROJECT_NAME -f $DOCKER_COMPOSE_PATH exec db \
+        docker-compose -p $DOCKER_NAME -f $DOCKER_COMPOSE_PATH exec db \
             bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"CREATE DATABASE IF NOT EXISTS \\\`$DB_DATABASE\\\` CHARACTER SET utf8 COLLATE utf8_unicode_ci;\""
         if [ $? -eq 0 ]; then
             echo -e "${WHITE}Created database.${NC}"
         else
             exit 1
         fi
-        docker-compose -p $PROJECT_NAME -f $DOCKER_COMPOSE_PATH exec -u user \
+        docker-compose -p $DOCKER_NAME -f $DOCKER_COMPOSE_PATH exec -u user \
             -e CONNECTIONS_DEFINED=true \
             -e DB_HOST=db \
             -e DB_DATABASE=$DB_DATABASE \
             -e DB_USERNAME=$DB_USERNAME \
             -e DB_PASSWORD=$DB_PASSWORD \
             -e ELASTICSEARCH_CONNECTION=elasticsearch:9200 \
-            app bash -ic "composer global require aerocommerce/cli && aero new $PROJECT_NAME;"
+            app bash -ic "composer global require aerocommerce/cli:dev-master && aero new $PROJECT_NAME --next;"
         if [ $? -eq 0 ]; then
             shopt -s dotglob
             mv ./$PROJECT_NAME ./__tmp
@@ -73,6 +101,6 @@ if [ $# -gt 0 ]; then
             exit 1
         fi
     else
-        docker-compose -p $PROJECT_NAME -f $DOCKER_COMPOSE_PATH "$@"
+        docker-compose -p $DOCKER_NAME -f $DOCKER_COMPOSE_PATH "$@"
     fi
 fi
