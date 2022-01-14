@@ -107,6 +107,73 @@ function docker_compose {
     docker-compose -p "$DOCKER_NAME" -f "$DOCKER_COMPOSE_PATH" "$@"
 }
 
+function install_theme {
+    if [ $# -eq 0 ]; then
+        echo -e "${WHITE}Not enough arguments (missing: \"theme name\").${NC}" >&2
+        exit 1
+    fi
+
+    THEME_NAME=$2
+    if [ -z "$THEME_NAME" ]; then
+        THEME_NAME=$1
+    fi
+
+    COMMAND=""
+    if ! < composer.json | grep "aerocommerce/theme-ui" > /dev/null 2>&1; then
+        COMMAND="${COMMAND}composer require aerocommerce/theme-ui --dev;"
+        COMMAND="${COMMAND}composer require aerocargo/listing-collections aerocommerce/components aerocommerce/account-area;"
+    fi
+    COMMAND="${COMMAND}php artisan theme:build $1 --config=vendor/aerocommerce/theme-ui/config/$THEME_NAME.yml -er;"
+
+    docker_compose exec -u user app bash -ic "$COMMAND"
+}
+
+function install_aero {
+    if [ $# -eq 0 ]; then
+        echo -e "${WHITE}Not enough arguments (missing: \"project name\").${NC}" >&2
+        exit 1
+    fi
+
+    if docker_compose exec -u user \
+        -e CONNECTIONS_DEFINED=true \
+        -e DB_HOST=db \
+        -e DB_DATABASE="$DB_DATABASE" \
+        -e DB_USERNAME="$DB_USERNAME" \
+        -e DB_PASSWORD="$DB_PASSWORD" \
+        -e ELASTICSEARCH_CONNECTION=elasticsearch:9200 \
+        app bash -ic "composer global require aerocommerce/cli:dev-master && aero new $1 --next;";
+    then
+        shopt -s dotglob
+        mv "./$1" ./__tmp
+        mv ./__tmp/* .
+        rm -rf ./__tmp
+    else
+        rm -rf "./$1"
+        exit 1
+    fi
+}
+
+function create_database {
+    if [ $# -eq 0 ]; then
+        echo -e "${WHITE}Not enough arguments (missing: \"database name\").${NC}" >&2
+        exit 1
+    fi
+
+    DB_DATABASE="$1"
+    if docker_compose exec db \
+        bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"CREATE DATABASE IF NOT EXISTS \\\`$DB_DATABASE\\\` CHARACTER SET utf8 COLLATE utf8_unicode_ci;\"";
+    then
+        echo -e "${WHITE}✔ Created database${NC}"
+    else
+        exit 1
+    fi
+}
+
+function seed_catalog {
+    docker_compose exec -u user \
+            app bash -ic "php artisan aero:import:products:csv https://aero-data.s3.eu-west-2.amazonaws.com/products.csv"
+}
+
 if [ $# -gt 0 ]; then
     if [ "$1" == "php" ]; then
         ensure_container_is_running
@@ -130,50 +197,16 @@ if [ $# -gt 0 ]; then
             exit 1
         fi
         ensure_container_is_running
-        DB_DATABASE="$PROJECT_NAME"
-        if docker_compose exec db \
-            bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"CREATE DATABASE IF NOT EXISTS \\\`$DB_DATABASE\\\` CHARACTER SET utf8 COLLATE utf8_unicode_ci;\"";
-        then
-            echo -e "${WHITE}✔ Created database${NC}"
-        else
-            exit 1
-        fi
-        
-        if docker_compose exec -u user \
-            -e CONNECTIONS_DEFINED=true \
-            -e DB_HOST=db \
-            -e DB_DATABASE="$DB_DATABASE" \
-            -e DB_USERNAME="$DB_USERNAME" \
-            -e DB_PASSWORD="$DB_PASSWORD" \
-            -e ELASTICSEARCH_CONNECTION=elasticsearch:9200 \
-            app bash -ic "composer global require aerocommerce/cli:dev-master && aero new $PROJECT_NAME --next;";
-        then
-            shopt -s dotglob
-            mv "./$PROJECT_NAME" ./__tmp
-            mv ./__tmp/* .
-            rm -rf ./__tmp
-        else
-            rm -rf "./$PROJECT_NAME"
-            exit 1
-        fi
+        create_database "$PROJECT_NAME"
+        install_aero "$PROJECT_NAME"
+        install_theme "shadow"
     elif [ "$1" == "theme:install" ]; then
         ensure_container_is_running
         shift 1
-        THEME_NAME=$2
-        if [ -z "$THEME_NAME" ]; then
-            THEME_NAME=$1
-        fi
-        COMMAND=""
-        if ! < composer.json | grep "aerocommerce/theme-ui" > /dev/null 2>&1; then
-            COMMAND="${COMMAND}composer require aerocommerce/theme-ui --dev;"
-            COMMAND="${COMMAND}composer require aerocargo/listing-collections aerocommerce/components aerocommerce/account-area;"
-        fi
-        COMMAND="${COMMAND}php artisan theme:build $1 --config=vendor/aerocommerce/theme-ui/config/$THEME_NAME.yml -er;"
-        docker_compose exec -u user app bash -ic "$COMMAND"
+        install_theme "$@"
     elif [ "$1" == "catalog:seed" ]; then
         ensure_container_is_running
-        docker_compose exec -u user \
-            app bash -ic "php artisan aero:import:products:csv https://aero-data.s3.eu-west-2.amazonaws.com/products.csv"
+        seed_catalog
     elif [ "$1" == "version" ]; then
         echo "Version: $AERO_DOCKER_VERSION"
         echo "Latest version: $LATEST_AERO_DOCKER_VERSION"

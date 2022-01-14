@@ -55,11 +55,7 @@ During the install process, you'll need to provide project credentials, which ca
 aero install
 ```
 
-Once the instalation is complete, choose a theme to install and seed the sample product catalog:
-
-```bash
-aero theme:install shadow
-```
+Once the instalation is complete, run the following command to seed the sample product catalog:
 
 ```bash
 aero catalog:seed
@@ -79,7 +75,7 @@ open http://localhost
 - `aero unpause`: Unpause the services
 - `aero restart`: Restart the services
 - `aero install`: Install an Aero store in the current directory
-- `aero theme:install {theme}`: Install a theme to the current Aero store
+- `aero theme:install [name]`: Install a theme to the current Aero store
 - `aero catalog:seed`: Seed the sample catalog to the current Aero store
 - `aero bash`: Create a bash prompt in the main app container to execute commands
 - `aero php`: Execute a PHP command within the main app container
