@@ -13,7 +13,8 @@ AERO_DOCKER_VERSION=$(cat "$AERO_DOCKER_PATH/.version")
 LATEST_AERO_DOCKER_VERSION=$(curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/master/compose/.version 2> /dev/null)
 
 if [ "$LATEST_AERO_DOCKER_VERSION" != "$AERO_DOCKER_VERSION" ]; then
-    echo -e "${WHITE}An update is available:${NC} Run 'aero self-update' to update to the latest version of Aero Docker." >&2
+    echo -e "${WHITE}An update is available.${NC}" >&2
+    echo "Run 'aero self-update' to update to the latest version of Aero Docker."
 fi
 
 if ! docker info > /dev/null 2>&1; then
@@ -98,7 +99,8 @@ function ensure_container_is_running {
     fi
 
     if [ $EXEC == "no" ]; then
-        echo -e "${WHITE}The application containers must be up and running to continue:${NC} Run the command 'aero up -d' and try again." >&2
+        echo -e "${WHITE}The application containers must be up and running to continue.${NC}" >&2
+        echo "Run the command 'aero up -d' and try again."
         exit 1
     fi
 }
@@ -208,7 +210,7 @@ if [ $# -gt 0 ]; then
         ensure_container_is_running
         seed_catalog
     elif [ "$1" == "version" ]; then
-        echo "Version: $AERO_DOCKER_VERSION"
+        echo -e "${WHITE}Version: $AERO_DOCKER_VERSION${NC}" >&2
         echo "Latest version: $LATEST_AERO_DOCKER_VERSION"
     elif [ "$1" == "self-update" ]; then
         if curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/master/install.sh | bash;
