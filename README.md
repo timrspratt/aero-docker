@@ -29,7 +29,47 @@ This configuration has been tested on Mac & Linux. Windows is supported through 
 curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/master/install.sh | bash
 ```
 
-A global `aero` command is registered. This command should be called from within directories which are/wish to be Aero store projects.
+A global `aero` command is registered.
+
+Next, create a directory for the store project and `cd` into it:
+
+```bash
+mkdir -p ~/Sites/aero-demo
+```
+
+```bash
+cd ~/Sites/aero-demo
+```
+
+Run the `aero up` command within this directory to boot the application containers:
+
+```bash
+aero up -d
+```
+
+Once the containers are up and running, run the `aero install` command.
+During the install process, you'll need to provide project credentials, which can be obtained from
+<a href="https://agora.aerocommerce.com/projects" target="_blank">Agora</a>.
+
+```bash
+aero install
+```
+
+Once the instalation is complete, choose a theme to install and seed the sample product catalog:
+
+```bash
+aero theme:install shadow
+```
+
+```bash
+aero catalog:seed
+```
+
+Visit your storefront in a browser:
+
+```bash
+open http://localhost
+```
 
 ## Available Commands
 
@@ -39,7 +79,7 @@ A global `aero` command is registered. This command should be called from within
 - `aero unpause`: Unpause the services
 - `aero restart`: Restart the services
 - `aero install`: Install an Aero store in the current directory
-- `aero theme:install`: Install a theme to the current Aero store
+- `aero theme:install {theme}`: Install a theme to the current Aero store
 - `aero catalog:seed`: Seed the sample catalog to the current Aero store
 - `aero bash`: Create a bash prompt in the main app container to execute commands
 - `aero php`: Execute a PHP command within the main app container
