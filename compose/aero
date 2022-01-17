@@ -182,7 +182,7 @@ function seed_catalog {
 
 function publish_env {
     mkdir -p "$PWD/.aero"
-    cp "$AERO_DOCKER_DIR/.aero/.env.example" "$PWD/.aero/.env"
+    cp "$AERO_DOCKER_PATH/.aero/.env.example" "$PWD/.aero/.env"
     vi "$PWD/.aero/.env"
 }
 
