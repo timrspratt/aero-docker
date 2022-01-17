@@ -41,7 +41,8 @@ mkdir -p ~/Sites/aero-demo
 cd ~/Sites/aero-demo
 ```
 
-> The default configuration uses port `80`, `3306` and `9200`.
+> **The default configuration uses port `80`, `3306` and `9200`.**
+> 
 > If there are already services running on your host machine that are using these ports, you can configure alternatives using `aero env:defaults`.
 > Should you wish to use a custom configuration for the project, run `aero env:project`.
 
