@@ -41,6 +41,10 @@ mkdir -p ~/Sites/aero-demo
 cd ~/Sites/aero-demo
 ```
 
+> The default configuration uses port `80`, `3306` and `9200`.
+> If there are already services running on your host machine that are using these ports, you can configure alternatives using `aero env:defaults`.
+> Should you wish to use a custom configuration for the project, run `aero env:project`.
+
 Run the `aero up` command within this directory to boot the application containers:
 
 ```bash
@@ -81,7 +85,8 @@ open http://localhost
 - `aero php`: Execute a PHP command within the main app container
 - `aero artisan`: Execute an artisan command within the main app container
 - `aero composer`: Execute a Composer command within the main app container
-- `aero env:project`: Publish the `.env` for the project container configuration
+- `aero env:defaults`: Edit the container configuration defaults
+- `aero env:project`: Publish the `.env` for the project and edit the container configuration
 - `aero version`: Output the current version of Aero Docker
 - `aero self-update`: Update to the latest version of Aero Docker
 
