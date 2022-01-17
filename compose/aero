@@ -180,6 +180,12 @@ function seed_catalog {
             app bash -ic "php artisan aero:import:products:csv https://aero-data.s3.eu-west-2.amazonaws.com/products.csv"
 }
 
+function publish_env {
+    mkdir -p "$PWD/.aero"
+    cp "$AERO_DOCKER_DIR/.aero/.env.example" "$PWD/.aero/.env"
+    vi "$PWD/.aero/.env"
+}
+
 if [ $# -gt 0 ]; then
     if [ "$1" == "php" ]; then
         update_check
@@ -220,6 +226,9 @@ if [ $# -gt 0 ]; then
         update_check
         ensure_container_is_running
         seed_catalog
+    elif [ "$1" == "env:project" ]; then
+        update_check
+        publish_env
     elif [ "$1" == "version" ]; then
         update_check
         echo -e "${WHITE}Version: $AERO_DOCKER_VERSION${NC}" >&2

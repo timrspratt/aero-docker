@@ -81,9 +81,10 @@ open http://localhost
 - `aero php`: Execute a PHP command within the main app container
 - `aero artisan`: Execute an artisan command within the main app container
 - `aero composer`: Execute a Composer command within the main app container
+- `aero env:project`: Publish the `.env` for the project container configuration
 - `aero version`: Output the current version of Aero Docker
 - `aero self-update`: Update to the latest version of Aero Docker
 
 ## License
 
-[MIT](https://opensource.org/licenses/MIT)
+[MIT License](https://opensource.org/licenses/MIT)
