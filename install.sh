@@ -22,3 +22,7 @@ else
     cp "$AERO_DOCKER_DIR/.aero/.env.example" "$AERO_DOCKER_DIR/.env"
 fi
 ln -s $(pwd)/aero /usr/local/bin/aero
+
+WHITE='\033[1;37m'
+NC='\033[0m'
+echo -e "${WHITE}✔ Installed${NC}" >&2

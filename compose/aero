@@ -127,6 +127,7 @@ function install_theme {
     if ! < composer.json | grep "aerocommerce/theme-ui" > /dev/null 2>&1; then
         COMMAND="${COMMAND}composer require aerocommerce/theme-ui --dev;"
         COMMAND="${COMMAND}composer require aerocargo/listing-collections aerocommerce/components aerocommerce/account-area;"
+        COMMAND="${COMMAND}php artisan migrate;"
     fi
     COMMAND="${COMMAND}php artisan theme:build $1 --config=vendor/aerocommerce/theme-ui/config/$THEME_NAME.yml -er;"
 
