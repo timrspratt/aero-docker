@@ -25,7 +25,7 @@ This configuration has been tested on Mac & Linux. Windows is supported through 
 
 The setup requires `git` to be installed.
 On macOS, this will automatically be installed upon running the setup command below.
-[Installing Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+[Download & Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
 
 ## Setup
 
