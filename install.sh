@@ -14,7 +14,7 @@ git checkout origin/master -- compose
 shopt -s dotglob
 mv compose/* ./
 rm -rf compose .git
-rm -rf /usr/local/bin/aero
+sudo rm -rf /usr/local/bin/aero
 if [ -f "$HOME/.env.aero-docker.temp" ]; then
     cp -p "$HOME/.env.aero-docker.temp" "$AERO_DOCKER_DIR/.env"
     rm -f "$HOME/.env.aero-docker.temp"
