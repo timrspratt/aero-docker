@@ -23,13 +23,17 @@ This setup assumes you are running Docker on a computer. [Download & Install Doc
 
 This configuration has been tested on Mac & Linux. Windows is supported through the use of Docker on WSL.
 
+The setup requires `git` to be installed.
+On macOS, this will automatically be installed upon running the setup command below.
+[Installing Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+
 ## Setup
+
+From command line, run the following command to register a global `aero` command:
 
 ```bash
 curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/master/install.sh | bash
 ```
-
-A global `aero` command is registered.
 
 Next, create a directory for the store project and `cd` into it:
 
