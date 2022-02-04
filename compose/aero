@@ -195,7 +195,17 @@ function publish_project_env {
 }
 
 if [ $# -gt 0 ]; then
-    if [ "$1" == "php" ]; then
+    if [ "$1" == "start" ]; then
+        update_check
+        ensure_container_is_running
+        shift 1
+        docker_compose up -d "$@"
+    elif [ "$1" == "stop" ]; then
+        update_check
+        ensure_container_is_running
+        shift 1
+        docker_compose down "$@"
+    elif [ "$1" == "php" ]; then
         update_check
         ensure_container_is_running
         shift 1

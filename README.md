@@ -50,10 +50,10 @@ cd ~/Sites/aero-demo
 > If there are services on your host machine already using these ports, you can configure alternatives using `aero env:defaults`.
 > Should you wish to use a custom configuration for the project, run `aero env:project`.
 
-Run the `aero up` command within this directory to boot the application containers:
+Run the `aero start` command within this directory to boot the application containers:
 
 ```bash
-aero up -d
+aero start
 ```
 
 Once the containers are up and running, run the `aero install` command.
@@ -78,8 +78,8 @@ open http://localhost
 
 ## Available Commands
 
-- `aero up`: Create and start the containers. Add the `-d` flag to run the containers in the background
-- `aero down`: Stops and removes the containers. Add the `-v` flag to also remove the data volumes
+- `aero start`: Create and start the containers
+- `aero stop`: Stops and removes the containers. Add the `-v` flag to also remove the data volumes
 - `aero pause`: Pause the services
 - `aero unpause`: Unpause the services
 - `aero restart`: Restart the services
