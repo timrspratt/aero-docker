@@ -11,11 +11,6 @@ fi
 
 AERO_DOCKER_VERSION=$(cat "$AERO_DOCKER_PATH/.version")
 
-if ! docker info > /dev/null 2>&1; then
-    echo -e "${WHITE}Docker is not running.${NC}" >&2
-    exit 1
-fi
-
 UNAMEOUT="$(uname -s)"
 
 case "${UNAMEOUT}" in
@@ -87,7 +82,16 @@ function update_check {
     fi
 }
 
+function ensure_docker_is_running {
+    if ! docker info > /dev/null 2>&1; then
+        echo -e "${WHITE}Docker is not running.${NC}" >&2
+        exit 1
+    fi
+}
+
 function ensure_container_is_running {
+    ensure_docker_is_running
+
     PSRESULT="$(docker_compose ps -q)"
     if docker_compose ps | grep "$DOCKER_NAME" | grep 'Exit'; then
         echo -e "${WHITE}Shutting down old application containers...${NC}" >&2
