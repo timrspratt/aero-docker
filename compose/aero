@@ -107,7 +107,7 @@ function ensure_container_is_running {
 
     if [ $EXEC == "no" ]; then
         echo -e "${WHITE}The application containers must be up and running to continue.${NC}" >&2
-        echo "Run the command 'aero up -d' and try again."
+        echo "Run the command 'aero start' and try again."
         exit 1
     fi
 }
@@ -201,7 +201,7 @@ function publish_project_env {
 if [ $# -gt 0 ]; then
     if [ "$1" == "start" ]; then
         update_check
-        ensure_container_is_running
+        ensure_docker_is_running
         shift 1
         docker_compose up -d "$@"
     elif [ "$1" == "stop" ]; then
