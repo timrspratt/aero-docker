@@ -229,6 +229,11 @@ if [ $# -gt 0 ]; then
         ensure_container_is_running
         shift 1
         docker_compose exec -u user app bash "$@"
+    elif [ "$1" == "db" ]; then
+        update_check
+        ensure_container_is_running
+        shift 1
+        docker_compose exec db mysql "$@"
     elif [ "$1" == "install" ]; then
         update_check
         if [ -f "$PWD/artisan" ]; then

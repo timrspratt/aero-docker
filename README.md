@@ -87,6 +87,7 @@ open http://localhost
 - `aero theme:install [name]`: Install a theme to the current Aero store
 - `aero catalog:seed`: Seed the sample catalog to the current Aero store
 - `aero bash`: Create a bash prompt in the main app container to execute commands
+- `aero db`: Open an interactive database shell connection
 - `aero php`: Execute a PHP command within the main app container
 - `aero artisan`: Execute an artisan command within the main app container
 - `aero composer`: Execute a Composer command within the main app container
