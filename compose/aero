@@ -82,6 +82,10 @@ function update_check {
     fi
 }
 
+function docker_compose {
+    docker-compose -p "$DOCKER_NAME" -f "$DOCKER_COMPOSE_PATH" "$@"
+}
+
 function ensure_docker_is_running {
     if ! docker info > /dev/null 2>&1; then
         echo -e "${WHITE}Docker is not running.${NC}" >&2
@@ -106,14 +110,16 @@ function ensure_container_is_running {
     fi
 
     if [ $EXEC == "no" ]; then
-        echo -e "${WHITE}The application containers must be up and running to continue.${NC}" >&2
-        echo "Run the command 'aero start' and try again."
-        exit 1
+        if [ $# -eq 0 ]; then
+            echo -e "${WHITE}The application containers must be up and running to continue.${NC}" >&2
+            echo "Run the command 'aero start' and try again."
+            exit 1
+        else
+            docker_compose up -d
+            sleep 1
+            ensure_container_is_running
+        fi
     fi
-}
-
-function docker_compose {
-    docker-compose -p "$DOCKER_NAME" -f "$DOCKER_COMPOSE_PATH" "$@"
 }
 
 function install_theme {
@@ -198,6 +204,16 @@ function publish_project_env {
     fi
 }
 
+function open_storefront {
+    PORT_EXT=""
+
+    if [ $WEB_PORT != 80 ]; then
+        PORT_EXT=":$WEB_PORT"
+    fi
+
+    open "http://localhost$PORT_EXT"
+}
+
 if [ $# -gt 0 ]; then
     if [ "$1" == "start" ]; then
         update_check
@@ -233,17 +249,18 @@ if [ $# -gt 0 ]; then
         update_check
         ensure_container_is_running
         shift 1
-        docker_compose exec db mysql "$@"
+        docker_compose exec db bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" $@"
     elif [ "$1" == "install" ]; then
         update_check
         if [ -f "$PWD/artisan" ]; then
             echo -e "${WHITE}The current directory is already a project.${NC}"
             exit 1
         fi
-        ensure_container_is_running
+        ensure_container_is_running true
         create_database "$PROJECT_NAME"
         install_aero "$PROJECT_NAME"
         install_theme "shadow"
+        open_storefront
     elif [ "$1" == "theme:install" ]; then
         update_check
         ensure_container_is_running

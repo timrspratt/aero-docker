@@ -19,7 +19,7 @@ This configuration is intended to be used as a Docker-based development environm
 
 ## Prerequisites
 
-This setup assumes you are running Docker on a computer. [Download & Install Docker Desktop](https://www.docker.com/products/docker-desktop).
+This setup assumes you are running Docker on a computer (the host machine). [Download & Install Docker Desktop](https://www.docker.com/products/docker-desktop).
 
 This configuration has been tested on Mac & Linux. Windows is supported through the use of Docker on WSL.
 
@@ -35,14 +35,17 @@ From command line, run the following command to register a global `aero` command
 curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/master/install.sh | bash
 ```
 
-Next, create a directory for the store project and `cd` into it:
+Next, create a directory for the store project and `cd` into it.
+The example below creates an empty directory named `aero-store` in the logged in user's home directory.
+The name of this directory is used as the name of the Docker "app", and will also be used as the Aero store name.
+Feel free to name this more suitably based on the website/domain/store.
 
 ```bash
-mkdir -p ~/Sites/aero-demo
+mkdir -p ~/aero-store
 ```
 
 ```bash
-cd ~/Sites/aero-demo
+cd ~/aero-store
 ```
 
 > **The default container configuration uses ports `80`, `3306` and `9200`.**
@@ -50,13 +53,7 @@ cd ~/Sites/aero-demo
 > If there are services on your host machine already using these ports, you can configure alternatives using `aero env:defaults`.
 > Should you wish to use a custom configuration for the project, run `aero env:project`.
 
-Run the `aero start` command within this directory to boot the application containers:
-
-```bash
-aero start
-```
-
-Once the containers are up and running, run the `aero install` command.
+Run the `aero install` command within this directory to boot the application containers and start the install process.
 During the install process, you'll need to provide project credentials, which can be obtained from
 [Agora](https://agora.aerocommerce.com/projects).
 
@@ -64,7 +61,7 @@ During the install process, you'll need to provide project credentials, which ca
 aero install
 ```
 
-Once the instalation is complete, run the following command to seed the sample product catalog:
+Once the installation is complete, run the following command to seed the sample product catalog (if needed):
 
 ```bash
 aero catalog:seed

@@ -2,11 +2,11 @@ version: '3'
 services:
     app:
         build:
-            context: ./.aero/runtimes/php/7.4
+            context: ./.aero/runtimes/php/8.1
             dockerfile: Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
-        image: aero/7.4
+        image: aero/8.1
         extra_hosts:
             - host.docker.internal:host-gateway
         ports:
@@ -15,10 +15,10 @@ services:
             - aero
         volumes:
             - '${PROJECT_PATH:-./}:/var/www/html'
-            - '${AERO_DOCKER_PATH:-.}/.aero/runtimes/php/7.4/config/nginx.conf:/etc/nginx/sites-enabled/99-user.conf'
-            - '${AERO_DOCKER_PATH:-.}/.aero/runtimes/php/7.4/config/php-pool.conf:/etc/php/7.4/fpm/pool.d/99-user.conf'
-            - '${AERO_DOCKER_PATH:-.}/.aero/runtimes/php/7.4/config/php-fpm.ini:/etc/php/7.4/fpm/conf.d/99-user.ini'
-            - '${AERO_DOCKER_PATH:-.}/.aero/runtimes/php/7.4/config/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf'
+            - '${AERO_DOCKER_PATH:-.}/.aero/runtimes/php/8.1/config/nginx.conf:/etc/nginx/sites-enabled/99-user.conf'
+            - '${AERO_DOCKER_PATH:-.}/.aero/runtimes/php/8.1/config/php-pool.conf:/etc/php/8.1/fpm/pool.d/99-user.conf'
+            - '${AERO_DOCKER_PATH:-.}/.aero/runtimes/php/8.1/config/php-fpm.ini:/etc/php/8.1/fpm/conf.d/99-user.ini'
+            - '${AERO_DOCKER_PATH:-.}/.aero/runtimes/php/8.1/config/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf'
         depends_on:
             - db
             - redis
