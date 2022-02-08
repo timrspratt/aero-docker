@@ -41,7 +41,7 @@ The name of this directory is used as the name of the Docker "app", and will als
 Feel free to name this more suitably based on the website/domain/store.
 
 ```bash
-mkdir -p ~/aero-store
+mkdir ~/aero-store
 ```
 
 ```bash
@@ -65,12 +65,6 @@ Once the installation is complete, run the following command to seed the sample 
 
 ```bash
 aero catalog:seed
-```
-
-Visit your storefront in a browser:
-
-```bash
-open http://localhost
 ```
 
 ## Available Commands
