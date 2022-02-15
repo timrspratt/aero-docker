@@ -67,6 +67,8 @@ Once the installation is complete, run the following command to seed the sample 
 aero catalog:seed
 ```
 
+**🎉 You're all set!**
+
 ## Alternative Setup
 
 ### Existing project
@@ -79,6 +81,10 @@ For example pulling a repository from GitHub to run locally.
 > Alternatively, you can run `aero env:project` to publish and adjust the container configuration for this project.
 
 Run the `aero setup` command from within the root directory of the project.
+
+```bash
+aero setup
+```
 
 ## Available Commands
 
