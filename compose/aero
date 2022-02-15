@@ -169,6 +169,36 @@ function install_aero {
     fi
 }
 
+function configure_aero {
+    if [ $# -eq 0 ]; then
+        echo -e "${WHITE}Not enough arguments (missing: \"project name\").${NC}" >&2
+        exit 1
+    fi
+
+    create_database aero
+
+    if docker_compose exec -u user app composer "install"; then
+        rm -rf "$PWD/storage/logs/aero.patch"
+        cp "$PWD/.env.example" "$PWD/.env"
+    else
+        exit 1
+    fi
+
+    if docker_compose exec -u user \
+        -e CONNECTIONS_DEFINED=true \
+        -e DB_HOST=db \
+        -e DB_DATABASE="$DB_DATABASE" \
+        -e DB_USERNAME="$DB_USERNAME" \
+        -e DB_PASSWORD="$DB_PASSWORD" \
+        -e ELASTICSEARCH_CONNECTION=elasticsearch:9200 \
+        app bash -ic "php artisan aero:configure --no-interaction;";
+    then
+        docker_compose exec -u user app bash -ic " php artisan key:generate && php artisan aero:install --seed"
+    else
+        exit 1
+    fi
+}
+
 function create_database {
     if [ $# -eq 0 ]; then
         echo -e "${WHITE}Not enough arguments (missing: \"database name\").${NC}" >&2
@@ -257,9 +287,22 @@ if [ $# -gt 0 ]; then
             exit 1
         fi
         ensure_container_is_running true
-        create_database "$PROJECT_NAME"
+        create_database aero
         install_aero "$PROJECT_NAME"
         install_theme "shadow"
+        open_storefront
+    elif [ "$1" == "setup" ]; then
+        update_check
+        if [ ! -f "$PWD/.env.example" ]; then
+            echo -e "${WHITE}The current directory is not a compatible project.${NC}"
+            exit 1
+        fi
+        if [ -f "$PWD/.env" ]; then
+            echo -e "${WHITE}The project appears to already have been setup.${NC}"
+            exit 1
+        fi
+        ensure_container_is_running true
+        configure_aero "$PROJECT_NAME"
         open_storefront
     elif [ "$1" == "theme:install" ]; then
         update_check

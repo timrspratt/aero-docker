@@ -5,11 +5,11 @@
   <a href="https://opensource.org/licenses/MIT" target="_blank"><img src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
 </div>
 
-## Table of Contents
-
 - [Usage](#usage)
 - [Prerequisites](#prerequisites)
 - [Setup](#setup)
+- [Alternative Setup](#alternative-setup)
+  - [Existing project](#existing-project)
 - [Available Commands](#available-commands)
 - [License](#license)
 
@@ -67,6 +67,17 @@ Once the installation is complete, run the following command to seed the sample 
 aero catalog:seed
 ```
 
+## Alternative Setup
+
+### Existing project
+
+There may be a time where you need to configure an existing project to run with Aero Docker.
+For example pulling a repository from GitHub to run locally for development.
+
+> **You will need to stop any containers running from other projects to ensure the ports do not collide.** Alternatively, you can run `aero env:project` to publish and adjust the container configuration for this project.
+
+Run the `aero setup` command from within the root directory of the project.
+
 ## Available Commands
 
 - `aero start`: Create and start the containers
@@ -75,6 +86,7 @@ aero catalog:seed
 - `aero unpause`: Unpause the services
 - `aero restart`: Restart the services
 - `aero install`: Install an Aero store in the current directory
+- `aero setup`: Setup the current project to run through Aero Docker
 - `aero theme:install [name]`: Install a theme to the current Aero store
 - `aero catalog:seed`: Seed the sample catalog to the current Aero store
 - `aero bash`: Create a bash prompt in the main app container to execute commands
