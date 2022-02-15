@@ -8,8 +8,10 @@
 - [Usage](#usage)
 - [Prerequisites](#prerequisites)
 - [Setup](#setup)
+  - [Global Command Installation](#global-command-installation)
+  - [Project Setup & Installation](#project-setup--installation)
 - [Alternative Setup](#alternative-setup)
-  - [Existing project](#existing-project)
+  - [Existing Project](#existing-project)
 - [Available Commands](#available-commands)
 - [License](#license)
 
@@ -29,11 +31,15 @@ On macOS, this will automatically be installed upon running the setup command be
 
 ## Setup
 
+### Global Command Installation
+
 From command line, run the following command to register a global `aero` command:
 
 ```bash
 curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/master/install.sh | bash
 ```
+
+### Project Setup & Installation
 
 Next, create a directory for the store project and `cd` into it.
 The example below creates an empty directory named `aero-store` in the logged in user's home directory.
@@ -71,7 +77,7 @@ aero catalog:seed
 
 ## Alternative Setup
 
-### Existing project
+### Existing Project
 
 There may be a time where you need to configure an existing project to run with Aero Docker.
 For example pulling a repository from GitHub to run locally.
