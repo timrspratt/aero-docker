@@ -176,9 +176,9 @@ function configure_aero {
     fi
 
     create_database aero
+    rm -rf "$PWD/storage/logs/aero.patch"
 
     if docker_compose exec -u user app composer "install"; then
-        rm -rf "$PWD/storage/logs/aero.patch"
         cp "$PWD/.env.example" "$PWD/.env"
     else
         exit 1
