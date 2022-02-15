@@ -230,6 +230,7 @@ function publish_project_env {
     if [ ! -f "$PWD/.aero/.env" ]; then
         mkdir -p "$PWD/.aero"
         cp "$AERO_DOCKER_PATH/.aero/.env.example" "$PWD/.aero/.env"
+        cp "$AERO_DOCKER_PATH/.aero/.gitignore" "$PWD/.aero/.gitignore"
         vi "$PWD/.aero/.env"
     fi
 }
