@@ -50,4 +50,4 @@ RUN echo 'export PATH="$PATH:$HOME/.composer/vendor/bin:$HOME/.config/composer/v
 COPY start /usr/local/bin/start
 RUN chmod +x /usr/local/bin/start
 
-ENTRYPOINT ["/bin/bash", "start"]
+ENTRYPOINT ["start"]

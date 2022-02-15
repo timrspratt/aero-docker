@@ -3,8 +3,6 @@
 trap "exit 0" SIGINT
 trap "exit 0" SIGTERM
 
-cd /home/user
-
 if [ ! -z "$WWWUSER" ]; then
     usermod -u $WWWUSER user
 fi
