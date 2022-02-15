@@ -72,9 +72,10 @@ aero catalog:seed
 ### Existing project
 
 There may be a time where you need to configure an existing project to run with Aero Docker.
-For example pulling a repository from GitHub to run locally for development.
+For example pulling a repository from GitHub to run locally.
 
-> **You will need to stop any containers running from other projects to ensure the ports do not collide.** Alternatively, you can run `aero env:project` to publish and adjust the container configuration for this project.
+> **You will need to stop any containers running from other projects to ensure the port bindings do not clash.**
+> Alternatively, you can run `aero env:project` to publish and adjust the container configuration for this project.
 
 Run the `aero setup` command from within the root directory of the project.
 
