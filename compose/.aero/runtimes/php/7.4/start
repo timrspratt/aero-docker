@@ -3,15 +3,18 @@
 trap "exit 0" SIGINT
 trap "exit 0" SIGTERM
 
+echo "uid: $WWWUSER"
+
 if [ ! -z "$WWWUSER" ]; then
+    echo "changing uid for user"
     usermod -u $WWWUSER user
 fi
 
-if [ ! -d .composer ]; then
-    mkdir .composer
+if [ ! -d /.composer ]; then
+    mkdir /.composer
 fi
 
-chmod -R ugo+rw .composer
+chmod -R ugo+rw /.composer
 
 if [ $# -gt 0 ]; then
     exec gosu $WWWUSER "$@"

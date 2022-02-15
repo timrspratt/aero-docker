@@ -7,11 +7,11 @@ if [ ! -z "$WWWUSER" ]; then
     usermod -u $WWWUSER user
 fi
 
-if [ ! -d .composer ]; then
-    mkdir .composer
+if [ ! -d /.composer ]; then
+    mkdir /.composer
 fi
 
-chmod -R ugo+rw .composer
+chmod -R ugo+rw /.composer
 
 if [ $# -gt 0 ]; then
     exec gosu $WWWUSER "$@"
