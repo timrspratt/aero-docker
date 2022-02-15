@@ -3,7 +3,7 @@ FROM ubuntu:21.04
 ARG WWWGROUP
 ARG NODE_VERSION=16
 
-WORKDIR /tmp
+WORKDIR /var/www/html
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV TZ=UTC
@@ -49,7 +49,5 @@ RUN echo 'export PATH="$PATH:$HOME/.composer/vendor/bin:$HOME/.config/composer/v
 
 COPY start /usr/local/bin/start
 RUN chmod +x /usr/local/bin/start
-
-WORKDIR /var/www/html
 
 ENTRYPOINT ["/bin/bash", "start"]
