@@ -34,13 +34,13 @@ services:
         environment:
             MYSQL_USER: '${DB_USERNAME:-root}'
             MYSQL_PASSWORD: '${DB_PASSWORD}'
-            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+            MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
         volumes:
             - db:/var/lib/mysql
         networks:
             - aero
         healthcheck:
-            test: [CMD, mysqladmin, ping]
+            test: [CMD, mysqladmin, ping, "-p${DB_PASSWORD}"]
             retries: 3
             timeout: 5s
     redis:

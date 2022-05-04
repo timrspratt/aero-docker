@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
 
-WHITE='\033[1;37m'
-NC='\033[0m'
-
 if [[ -L ${BASH_SOURCE[0]} ]]; then
     AERO_DOCKER_PATH="$(cd "$(dirname "$(readlink "${BASH_SOURCE[0]}")")" && pwd -P)"
 else
-    AERO_DOCKER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"  
+    AERO_DOCKER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 fi
 
 AERO_DOCKER_VERSION=$(cat "$AERO_DOCKER_PATH/.version")
@@ -20,7 +17,7 @@ case "${UNAMEOUT}" in
 esac
 
 if [ "$MACHINE" == "UNKNOWN" ]; then
-    echo -e "${WHITE}Unsupported operating system [$UNAMEOUT].${NC}" >&2
+    echo -e "Unsupported operating system [$UNAMEOUT]." >&2
     exit 1
 fi
 
@@ -33,16 +30,80 @@ case "${TARGETARCH}" in
 esac
 
 if [ "$PLATFORM" == "UNKNOWN" ]; then
-    echo -e "${WHITE}Unsupported chipset architecture [$TARGETARCH].${NC}" >&2
+    echo -e "Unsupported chipset architecture [$TARGETARCH]." >&2
     exit 1
+fi
+
+if test -t 1; then
+    ncolors=$(tput colors)
+
+    if test -n "$ncolors" && test "$ncolors" -ge 8; then
+        BOLD="$(tput bold)"
+        YELLOW="$(tput setaf 3)"
+        GREEN="$(tput setaf 2)"
+        NC="$(tput sgr0)"
+    fi
+fi
+
+function display_help {
+    echo "${BOLD}Aero Docker${NC}"
+    echo "Version ${AERO_DOCKER_VERSION}"
+    echo
+    echo "${YELLOW}Usage:${NC}" >&2
+    echo "  aero COMMAND [options] [arguments]"
+    echo
+    echo "Unknown commands are passed to the docker-compose binary."
+    echo
+    echo "${YELLOW}Docker Commands:${NC}"
+    echo "  ${GREEN}aero start${NC}                     Start the container services"
+    echo "  ${GREEN}aero stop${NC}                      Stop the container services"
+    echo "  ${GREEN}aero pause${NC}                     Pause the container services"
+    echo "  ${GREEN}aero unpause${NC}                   Unpause the container services"
+    echo "  ${GREEN}aero restart${NC}                   Restart the container services"
+    echo "  ${GREEN}aero ps${NC}                        Display the status of all containers"
+    echo
+    echo "${YELLOW}Onboarding Commands:${NC}"
+    echo "  ${GREEN}aero install${NC}                   Install an Aero store in the current directory"
+    echo "  ${GREEN}aero setup${NC}                     Setup the current project to run through Aero Docker"
+    echo "  ${GREEN}aero catalog:seed${NC}              Seed the sample catalog to the current Aero store"
+    echo "  ${GREEN}aero theme:install ...${NC}         Setup the current project to run through Aero Docker"
+    echo
+    echo "${YELLOW}Artisan Commands:${NC}"
+    echo "  ${GREEN}aero artisan ...${NC}               Run an Artisan command"
+    echo
+    echo "${YELLOW}PHP Commands:${NC}"
+    echo "  ${GREEN}aero php ...${NC}                   Run a snippet of PHP code"
+    echo
+    echo "${YELLOW}Composer Commands:${NC}"
+    echo "  ${GREEN}aero composer ...${NC}              Run a Composer command"
+    echo
+    echo "${YELLOW}NPM Commands:${NC}"
+    echo "  ${GREEN}aero npm ...${NC}                   Run a npm command"
+    echo
+    echo "${YELLOW}Database Commands:${NC}"
+    echo "  ${GREEN}aero db${NC}                        Start a MySQL CLI session within the 'mariadb' container"
+    echo
+    echo "${YELLOW}Container CLI:${NC}"
+    echo "  ${GREEN}aero shell${NC}                     Start a shell session within the application container"
+    echo "  ${GREEN}aero bash${NC}                      Alias for 'aero shell'"
+
+    exit 1
+}
+
+if [ $# -gt 0 ]; then
+    if [ "$1" == "help" ] || [ "$1" == "-h" ] || [ "$1" == "-help" ] || [ "$1" == "--help" ]; then
+        display_help
+    fi
+else
+    display_help
 fi
 
 DOCKER_COMPOSE_PATH=docker-compose.yml
 PROJECT_NAME=$(basename "$PWD")
-DOCKER_NAME="aero-$PROJECT_NAME"
+DOCKER_NAME="$PROJECT_NAME"
 
 if [[ "$TITLE" =~ [^a-zA-Z0-9\ ] ]]; then
-    echo -e "${WHITE}Directory name must consist of alphanumeric characters only.${NC}" >&2
+    echo -e "${YELLOW}Directory name must consist of alphanumeric characters only.${NC}" >&2
     exit 1
 fi
 
@@ -56,7 +117,7 @@ if [ -f "$PWD/.aero/.env" ]; then
     source "$PWD/.aero/.env"
 fi
 
-if [ ! -f "$PWD/docker-compose.yml" ]; then
+if [ ! -f "$PWD/$DOCKER_COMPOSE_PATH" ]; then
     DOCKER_COMPOSE_PATH="$AERO_DOCKER_PATH/$DOCKER_COMPOSE"
 fi
 
@@ -74,11 +135,15 @@ export ES_MEMORY=${ES_MEMORY:-}
 export AERO_DOCKER_PATH=${AERO_DOCKER_PATH:-.}
 
 function update_check {
-    LATEST_AERO_DOCKER_VERSION=$(curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/master/compose/.version 2> /dev/null)
+    LATEST_AERO_DOCKER_VERSION=$(curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/1.x/compose/.version 2> /dev/null)
 
     if [ "$LATEST_AERO_DOCKER_VERSION" != "$AERO_DOCKER_VERSION" ]; then
-        echo -e "${WHITE}An update is available.${NC}" >&2
-        echo "Run 'aero self-update' to update to the latest version of Aero Docker."
+        echo -e ""
+        echo -e "+---------------------------------------------------------+"
+        echo -e "| ${BOLD}${YELLOW}An update is available.${NC}                                 |" >&2
+        echo -e "| Run \`aero self-update\` to update to the latest version. |"
+        echo -e "+---------------------------------------------------------+"
+        echo -e ""
     fi
 }
 
@@ -88,7 +153,7 @@ function docker_compose {
 
 function ensure_docker_is_running {
     if ! docker info > /dev/null 2>&1; then
-        echo -e "${WHITE}Docker is not running.${NC}" >&2
+        echo -e "${YELLOW}Docker is not running.${NC}" >&2
         exit 1
     fi
 }
@@ -98,7 +163,7 @@ function ensure_container_is_running {
 
     PSRESULT="$(docker_compose ps -q)"
     if docker_compose ps | grep "$DOCKER_NAME" | grep 'Exit'; then
-        echo -e "${WHITE}Shutting down old application containers...${NC}" >&2
+        echo -e "${YELLOW}Shutting down old application containers...${NC}" >&2
 
         docker_compose down > /dev/null 2>&1
 
@@ -111,8 +176,8 @@ function ensure_container_is_running {
 
     if [ $EXEC == "no" ]; then
         if [ $# -eq 0 ]; then
-            echo -e "${WHITE}The application containers must be up and running to continue.${NC}" >&2
-            echo "Run the command 'aero start' and try again."
+            echo -e "${YELLOW}The application containers must be up and running to continue.${NC}" >&2
+            echo -e "Run the command \`aero start\` and try again."
             exit 1
         else
             docker_compose up -d
@@ -122,31 +187,27 @@ function ensure_container_is_running {
     fi
 }
 
+function ensure_compose_exists {
+    if [ ! -f "$PWD/docker-compose.yml" ]; then
+        cp "$AERO_DOCKER_PATH/$DOCKER_COMPOSE" "$PWD/docker-compose.yml"
+        DOCKER_COMPOSE_PATH="$PWD/docker-compose.yml"
+    fi
+}
+
 function install_theme {
     if [ $# -eq 0 ]; then
-        echo -e "${WHITE}Not enough arguments (missing: \"theme name\").${NC}" >&2
+        echo -e "${YELLOW}Not enough arguments (missing: \"theme name\").${NC}" >&2
         exit 1
     fi
 
-    THEME_NAME=$2
-    if [ -z "$THEME_NAME" ]; then
-        THEME_NAME=$1
-    fi
-
-    COMMAND=""
-    if ! < composer.json | grep "aerocommerce/theme-ui" > /dev/null 2>&1; then
-        COMMAND="${COMMAND}composer require aerocommerce/theme-ui --dev;"
-        COMMAND="${COMMAND}composer require aerocargo/listing-collections aerocommerce/components aerocommerce/account-area;"
-        COMMAND="${COMMAND}php artisan migrate;"
-    fi
-    COMMAND="${COMMAND}php artisan theme:build $1 --config=vendor/aerocommerce/theme-ui/config/$THEME_NAME.yml -er;"
+    COMMAND="php artisan theme:install $@;"
 
     docker_compose exec -u user app bash -ic "$COMMAND"
 }
 
 function install_aero {
     if [ $# -eq 0 ]; then
-        echo -e "${WHITE}Not enough arguments (missing: \"project name\").${NC}" >&2
+        echo -e "${YELLOW}Not enough arguments (missing: \"project name\").${NC}" >&2
         exit 1
     fi
 
@@ -171,7 +232,7 @@ function install_aero {
 
 function configure_aero {
     if [ $# -eq 0 ]; then
-        echo -e "${WHITE}Not enough arguments (missing: \"project name\").${NC}" >&2
+        echo -e "${YELLOW}Not enough arguments (missing: \"project name\").${NC}" >&2
         exit 1
     fi
 
@@ -199,18 +260,33 @@ function configure_aero {
     fi
 }
 
+function wait_for_db {
+    if docker_compose exec db \
+        bash -ic "mysqladmin --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" ping > /dev/null";
+    then
+        sleep 1
+    else
+        echo -e "${YELLOW}Waiting for database.${NC}" >&2
+        sleep 2
+        wait_for_db
+    fi
+}
+
 function create_database {
     if [ $# -eq 0 ]; then
-        echo -e "${WHITE}Not enough arguments (missing: \"database name\").${NC}" >&2
+        echo -e "${YELLOW}Not enough arguments (missing: \"database name\").${NC}" >&2
         exit 1
     fi
+
+    wait_for_db
 
     DB_DATABASE="$1"
     if docker_compose exec db \
         bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"CREATE DATABASE IF NOT EXISTS \\\`$DB_DATABASE\\\` CHARACTER SET utf8 COLLATE utf8_unicode_ci;\"";
     then
-        echo -e "${WHITE}✔ Created database${NC}"
+        echo -e "${GREEN}Database created.${NC}"
     else
+        echo -e "${YELLOW}There was a problem creating the database.${NC}"
         exit 1
     fi
 }
@@ -235,16 +311,6 @@ function publish_project_env {
     fi
 }
 
-function open_storefront {
-    PORT_EXT=""
-
-    if [ $WEB_PORT != 80 ]; then
-        PORT_EXT=":$WEB_PORT"
-    fi
-
-    open "http://localhost$PORT_EXT"
-}
-
 if [ $# -gt 0 ]; then
     if [ "$1" == "start" ]; then
         update_check
@@ -266,12 +332,17 @@ if [ $# -gt 0 ]; then
         ensure_container_is_running
         shift 1
         docker_compose exec -u user app composer "$@"
+    elif [ "$1" == "npm" ]; then
+        update_check
+        ensure_container_is_running
+        shift 1
+        docker_compose exec -u user app npm "$@"
     elif [ "$1" == "artisan" ]; then
         update_check
         ensure_container_is_running
         shift 1
         docker_compose exec -u user app php artisan "$@"
-    elif [ "$1" == "bash" ]; then
+    elif [ "$1" == "shell" ] || [ "$1" == "bash" ]; then
         update_check
         ensure_container_is_running
         shift 1
@@ -284,27 +355,26 @@ if [ $# -gt 0 ]; then
     elif [ "$1" == "install" ]; then
         update_check
         if [ -f "$PWD/artisan" ]; then
-            echo -e "${WHITE}The current directory is already a project.${NC}"
+            echo -e "${YELLOW}The current directory is already a project.${NC}"
             exit 1
         fi
+        ensure_compose_exists
         ensure_container_is_running true
         create_database aero
         install_aero "$PROJECT_NAME"
-        install_theme "shadow"
-        open_storefront
+        install_theme "aero/raw" "--name=raw"
     elif [ "$1" == "setup" ]; then
         update_check
         if [ ! -f "$PWD/.env.example" ]; then
-            echo -e "${WHITE}The current directory is not a compatible project.${NC}"
+            echo -e "${YELLOW}The current directory is not a compatible project.${NC}"
             exit 1
         fi
         if [ -f "$PWD/.env" ]; then
-            echo -e "${WHITE}The project appears to already have been setup.${NC}"
+            echo -e "${YELLOW}The project appears to already have been setup.${NC}"
             exit 1
         fi
         ensure_container_is_running true
         configure_aero "$PROJECT_NAME"
-        open_storefront
     elif [ "$1" == "theme:install" ]; then
         update_check
         ensure_container_is_running
@@ -320,15 +390,15 @@ if [ $# -gt 0 ]; then
     elif [ "$1" == "env:project" ]; then
         update_check
         publish_project_env
-    elif [ "$1" == "version" ]; then
+    elif [ "$1" == "version" ] || [ "$1" == "--version" ]; then
         update_check
-        echo -e "${WHITE}Version: $AERO_DOCKER_VERSION${NC}" >&2
+        echo -e "Current Version: $AERO_DOCKER_VERSION" >&2
     elif [ "$1" == "self-update" ]; then
-        if curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/master/install.sh | bash;
+        if curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/1.x/install.sh | bash;
         then
-            echo -e "${WHITE}✔ Updated${NC}" >&2
+            echo -e "${GREEN}Updated.${NC}" >&2
         else
-            echo -e "${WHITE}There was a problem updating.${NC}" >&2
+            echo -e "${YELLOW}There was a problem updating.${NC}" >&2
             exit 1
         fi
     else

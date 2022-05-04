@@ -55,11 +55,11 @@ cd ~/aero-store
 ```
 
 > **The default container configuration uses ports `80`, `3306` and `9200`.**
-> 
+>
 > If there are services on your host machine already using these ports, you can configure alternatives using `aero env:defaults`.
 > Should you wish to use a custom configuration for the project, run `aero env:project`.
 
-Run the `aero install` command within this directory to boot the application containers and start the install process.
+Run the `aero install` command within this directory to start the install.
 During the install process, you'll need to provide project credentials, which can be obtained from
 [Agora](https://agora.aerocommerce.com/projects).
 
@@ -73,7 +73,7 @@ Once the installation is complete, run the following command to seed the sample 
 aero catalog:seed
 ```
 
-**🎉 You're all set!**
+**🎉 You're all set!** – open your browser and navigate to `http://localhost` (if you've changed the `WEB_PORT` make sure to append this).
 
 ## Alternative Setup
 
@@ -83,7 +83,7 @@ There may be a time where you need to configure an existing project to run with 
 For example pulling a repository from GitHub to run locally.
 
 > **You will need to stop any containers running from other projects to ensure the port bindings do not clash.**
-> 
+>
 > Alternatively, you can run `aero env:project` to publish and adjust the container configuration for this project.
 
 Run the `aero setup` command from within the root directory of the project.
@@ -94,8 +94,8 @@ aero setup
 
 ## Available Commands
 
-- `aero start`: Create and start the containers
-- `aero stop`: Stops and removes the containers. Add the `-v` flag to also remove the data volumes
+- `aero start`: Start the containers
+- `aero stop`: Stop the containers
 - `aero pause`: Pause the services
 - `aero unpause`: Unpause the services
 - `aero restart`: Restart the services
