@@ -25,10 +25,6 @@ This setup assumes you are running Docker on a computer (the host machine). [Dow
 
 This configuration has been tested on Mac & Linux. Windows is supported through the use of Docker on WSL.
 
-The setup requires `git` to be installed.
-On macOS, this will automatically be installed upon running the setup command below.
-[Download & Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
-
 ## Setup
 
 ### Global Command Installation
@@ -36,35 +32,17 @@ On macOS, this will automatically be installed upon running the setup command be
 From command line, run the following command to register a global `aero` command:
 
 ```bash
-curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/master/install.sh | bash
+curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/1.x/install.sh | bash
 ```
 
 ### Project Setup & Installation
 
-Next, create a directory for the store project and `cd` into it.
-The example below creates an empty directory named `aero-store` in the logged in user's home directory.
-The name of this directory is used as the name of the Docker "app", and will also be used as the Aero store name.
-Feel free to name this more suitably based on the website/domain/store.
-
-```bash
-mkdir ~/aero-store
-```
-
-```bash
-cd ~/aero-store
-```
-
-> **The default container configuration uses ports `80`, `3306` and `9200`.**
->
-> If there are services on your host machine already using these ports, you can configure alternatives using `aero env:defaults`.
-> Should you wish to use a custom configuration for the project, run `aero env:project`.
-
-Run the `aero install` command within this directory to start the install.
+Run the `aero new` command to start the installation.
 During the install process, you'll need to provide project credentials, which can be obtained from
 [Agora](https://agora.aerocommerce.com/projects).
 
 ```bash
-aero install
+aero new {store_name}
 ```
 
 Once the installation is complete, run the following command to seed the sample product catalog (if needed):
@@ -94,24 +72,7 @@ aero setup
 
 ## Available Commands
 
-- `aero start`: Start the containers
-- `aero stop`: Stop the containers
-- `aero pause`: Pause the services
-- `aero unpause`: Unpause the services
-- `aero restart`: Restart the services
-- `aero install`: Install an Aero store in the current directory
-- `aero setup`: Setup the current project to run through Aero Docker
-- `aero theme:install [name]`: Install a theme to the current Aero store
-- `aero catalog:seed`: Seed the sample catalog to the current Aero store
-- `aero bash`: Create a bash prompt in the main app container to execute commands
-- `aero db`: Open an interactive database shell connection
-- `aero php`: Execute a PHP command within the main app container
-- `aero artisan`: Execute an artisan command within the main app container
-- `aero composer`: Execute a Composer command within the main app container
-- `aero env:defaults`: Edit the container configuration defaults
-- `aero env:project`: Publish the `.env` for the project and edit the container configuration
-- `aero version`: Output the current version of Aero Docker
-- `aero self-update`: Update to the latest version of Aero Docker
+Run `aero help` to view a list of the available commands.
 
 ## License
 

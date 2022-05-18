@@ -3,8 +3,8 @@
 trap "exit 0" SIGINT
 trap "exit 0" SIGTERM
 
-if [ ! -z "$WWWUSER" ]; then
-    usermod -u $WWWUSER user
+if [ -n "$WWWUSER" ]; then
+    usermod -u "$WWWUSER" user
 fi
 
 if [ ! -d /.composer ]; then
@@ -14,7 +14,7 @@ fi
 chmod -R ugo+rw /.composer
 
 if [ $# -gt 0 ]; then
-    exec gosu $WWWUSER "$@"
+    exec gosu "$WWWUSER" "$@"
 else
     exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
 fi

@@ -63,7 +63,7 @@ function display_help {
     echo "  ${GREEN}aero ps${NC}                        Display the status of all containers"
     echo
     echo "${YELLOW}Onboarding Commands:${NC}"
-    echo "  ${GREEN}aero install${NC}                   Install an Aero store in the current directory"
+    echo "  ${GREEN}aero install${NC}                   Install and setup an new Aero store in the current directory"
     echo "  ${GREEN}aero setup${NC}                     Setup the current project to run through Aero Docker"
     echo "  ${GREEN}aero catalog:seed${NC}              Seed the sample catalog to the current Aero store"
     echo "  ${GREEN}aero theme:install ...${NC}         Setup the current project to run through Aero Docker"
@@ -102,7 +102,7 @@ DOCKER_COMPOSE_PATH=docker-compose.yml
 PROJECT_NAME=$(basename "$PWD")
 DOCKER_NAME="$PROJECT_NAME"
 
-if [[ "$TITLE" =~ [^a-zA-Z0-9\ ] ]]; then
+if [[ "$DOCKER_NAME" =~ [^a-zA-Z0-9\ ] ]]; then
     echo -e "${YELLOW}Directory name must consist of alphanumeric characters only.${NC}" >&2
     exit 1
 fi
@@ -124,7 +124,6 @@ fi
 export PLATFORM=${PLATFORM}
 export WWWUSER=${WWWUSER:-$UID}
 export WWWGROUP=${WWWGROUP:-$(id -g)}
-export PROJECT_PATH=${PROJECT_PATH:-$PWD}
 export DB_USERNAME=${DB_USERNAME:-}
 export DB_PASSWORD=${DB_PASSWORD:-}
 export DB_PORT=${DB_PORT:-}
@@ -158,11 +157,21 @@ function ensure_docker_is_running {
     fi
 }
 
+function ensure_ports_are_available {
+    EXISTING_PORTS=$(lsof -nP -iTCP:"$WEB_PORT" -iTCP:"$DB_PORT" -iTCP:"$REDIS_PORT" -iTCP:"$ES_PORT" -sTCP:LISTEN | awk '{print $9}' | uniq | grep -E -o ":\d+")
+    if [ -n "$EXISTING_PORTS" ]; then
+        echo -e "${YELLOW}The following ports are already in use:${NC}" >&2
+        echo "$EXISTING_PORTS" | grep -E -o '\d+' | sort
+
+        exit 1
+    fi
+}
+
 function ensure_container_is_running {
     ensure_docker_is_running
 
     PSRESULT="$(docker_compose ps -q)"
-    if docker_compose ps | grep "$DOCKER_NAME" | grep 'Exit'; then
+    if docker_compose ps | grep "$DOCKER_NAME" | grep 'Exit\|exited'; then
         echo -e "${YELLOW}Shutting down old application containers...${NC}" >&2
 
         docker_compose down > /dev/null 2>&1
@@ -180,6 +189,7 @@ function ensure_container_is_running {
             echo -e "Run the command \`aero start\` and try again."
             exit 1
         else
+            ensure_ports_are_available
             docker_compose up -d
             sleep 1
             ensure_container_is_running
@@ -315,6 +325,7 @@ if [ $# -gt 0 ]; then
     if [ "$1" == "start" ]; then
         update_check
         ensure_docker_is_running
+        ensure_ports_are_available
         shift 1
         docker_compose up -d "$@"
     elif [ "$1" == "stop" ]; then
@@ -342,6 +353,11 @@ if [ $# -gt 0 ]; then
         ensure_container_is_running
         shift 1
         docker_compose exec -u user app php artisan "$@"
+    elif [ "$1" == "queue" ]; then
+            update_check
+            ensure_container_is_running
+            shift 1
+            docker_compose exec -u user app php artisan queue:work --queue=default,search,email,subscriptions --timeout=0
     elif [ "$1" == "shell" ] || [ "$1" == "bash" ]; then
         update_check
         ensure_container_is_running
@@ -352,6 +368,18 @@ if [ $# -gt 0 ]; then
         ensure_container_is_running
         shift 1
         docker_compose exec db bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" $@"
+    elif [ "$1" == "new" ]; then
+        update_check
+        shift 1
+        if [ -d "$PWD/$1" ]; then
+            echo -e "${YELLOW}A directory with this name already exists.${NC}"
+            exit 1
+        fi
+        ensure_ports_are_available
+        mkdir "$PWD/$1"
+        cd "$_" || exit 1
+        $0 install
+        $SHELL
     elif [ "$1" == "install" ]; then
         update_check
         if [ -f "$PWD/artisan" ]; then
@@ -362,7 +390,7 @@ if [ $# -gt 0 ]; then
         ensure_container_is_running true
         create_database aero
         install_aero "$PROJECT_NAME"
-        install_theme "aero/raw" "--name=raw"
+        install_theme "aero/raw" "--name=raw" "--no-interaction"
     elif [ "$1" == "setup" ]; then
         update_check
         if [ ! -f "$PWD/.env.example" ]; then
