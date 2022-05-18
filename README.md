@@ -51,7 +51,7 @@ Once the installation is complete, run the following command to seed the sample 
 aero catalog:seed
 ```
 
-**🎉 You're all set!** – open your browser and navigate to `http://localhost` (if you've changed the `WEB_PORT` make sure to append this).
+**🎉 Open your browser and navigate to `http://localhost` (if you've changed the `WEB_PORT` make sure to append this).
 
 ## Alternative Setup
 
