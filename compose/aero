@@ -422,7 +422,7 @@ if [ $# -gt 0 ]; then
         update_check
         echo -e "Current Version: $AERO_DOCKER_VERSION" >&2
     elif [ "$1" == "self-update" ]; then
-        if curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/1.x/install.sh | bash;
+        if curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/1.x/install.sh | bash 1;
         then
             echo -e "${GREEN}Updated.${NC}" >&2
         else
