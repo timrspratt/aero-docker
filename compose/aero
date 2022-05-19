@@ -8,6 +8,12 @@ fi
 
 AERO_DOCKER_VERSION=$(cat "$AERO_DOCKER_PATH/.version")
 
+if [ -f "$AERO_DOCKER_PATH/.runtime" ]; then
+    AERO_DOCKER_RUNTIME=$(cat "$AERO_DOCKER_PATH/.runtime")
+else
+    AERO_DOCKER_RUNTIME=7.4
+fi
+
 UNAMEOUT="$(uname -s)"
 
 case "${UNAMEOUT}" in
@@ -18,19 +24,6 @@ esac
 
 if [ "$MACHINE" == "UNKNOWN" ]; then
     echo -e "Unsupported operating system [$UNAMEOUT]." >&2
-    exit 1
-fi
-
-TARGETARCH=$(uname -m)
-
-case "${TARGETARCH}" in
-    x86_64*)            PLATFORM=linux/amd64;;
-    arm64*)             PLATFORM=linux/arm64/v8;;
-    *)                  PLATFORM="UNKNOWN"
-esac
-
-if [ "$PLATFORM" == "UNKNOWN" ]; then
-    echo -e "Unsupported chipset architecture [$TARGETARCH]." >&2
     exit 1
 fi
 
@@ -98,22 +91,17 @@ else
     display_help
 fi
 
-DOCKER_COMPOSE_PATH=docker-compose.yml
 PROJECT_NAME=$(basename "$PWD")
 DOCKER_NAME="$PROJECT_NAME"
 
-if [ -f "$AERO_DOCKER_PATH/.aero/.env.example" ]; then
-    source "$AERO_DOCKER_PATH/.aero/.env.example"
+if [ -f "$AERO_DOCKER_PATH/.env.example" ]; then
+    source "$AERO_DOCKER_PATH/.env.example"
 fi
 if [ -f "$AERO_DOCKER_PATH/.env" ]; then
     source "$AERO_DOCKER_PATH/.env"
 fi
 if [ -f "$PWD/.aero/.env" ]; then
     source "$PWD/.aero/.env"
-fi
-
-if [ ! -f "$PWD/$DOCKER_COMPOSE_PATH" ]; then
-    DOCKER_COMPOSE_PATH="$AERO_DOCKER_PATH/$DOCKER_COMPOSE"
 fi
 
 export PLATFORM=${PLATFORM}
@@ -142,7 +130,7 @@ function update_check {
 }
 
 function docker_compose {
-    docker-compose -p "$DOCKER_NAME" -f "$DOCKER_COMPOSE_PATH" "$@"
+    docker-compose -p "$DOCKER_NAME" "$@"
 }
 
 function ensure_docker_is_running {
@@ -194,8 +182,12 @@ function ensure_container_is_running {
 
 function ensure_compose_exists {
     if [ ! -f "$PWD/docker-compose.yml" ]; then
-        cp "$AERO_DOCKER_PATH/$DOCKER_COMPOSE" "$PWD/docker-compose.yml"
-        DOCKER_COMPOSE_PATH="$PWD/docker-compose.yml"
+        if [ -f "$AERO_DOCKER_PATH/$AERO_DOCKER_RUNTIME/docker-compose.yml" ]; then
+            cp "$AERO_DOCKER_PATH/$AERO_DOCKER_RUNTIME/docker-compose.yml" "$PWD/docker-compose.yml"
+        else
+            echo -e "${YELLOW}Invalid runtime.${NC}" >&2
+            exit 1
+        fi
     fi
 }
 
@@ -310,8 +302,8 @@ function edit_env_defaults {
 function publish_project_env {
     if [ ! -f "$PWD/.aero/.env" ]; then
         mkdir -p "$PWD/.aero"
-        cp "$AERO_DOCKER_PATH/.aero/.env.example" "$PWD/.aero/.env"
-        cp "$AERO_DOCKER_PATH/.aero/.gitignore" "$PWD/.aero/.gitignore"
+        cp "$AERO_DOCKER_PATH/.env.example" "$PWD/.aero/.env"
+        cp -n "$AERO_DOCKER_PATH/.gitignore" "$PWD/.aero/.gitignore"
         vi "$PWD/.aero/.env"
     fi
 }
@@ -409,6 +401,7 @@ if [ $# -gt 0 ]; then
             echo -e "${YELLOW}The project appears to already have been setup.${NC}"
             exit 1
         fi
+        ensure_compose_exists
         ensure_container_is_running true
         configure_aero "$PROJECT_NAME"
     elif [ "$1" == "theme:install" ]; then

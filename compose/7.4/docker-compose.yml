@@ -2,7 +2,7 @@ version: "3"
 services:
   app:
     build:
-      context: "./.aero/runtimes/php/7.4"
+      context: "./.aero"
       dockerfile: Dockerfile
       args:
         WWWGROUP: "${WWWGROUP}"
@@ -17,16 +17,15 @@ services:
       - aero
     volumes:
       - "./:/var/www/html"
-      - "./.aero/runtimes/php/7.4/config/nginx.conf:/etc/nginx/sites-enabled/99-user.conf"
-      - "./.aero/runtimes/php/7.4/config/php-pool.conf:/etc/php/7.4/fpm/pool.d/99-user.conf"
-      - "./.aero/runtimes/php/7.4/config/php-fpm.ini:/etc/php/7.4/fpm/conf.d/99-user.ini"
-      - "./.aero/runtimes/php/7.4/config/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf"
+      - "./.aero/config/nginx.conf:/etc/nginx/sites-enabled/99-user.conf"
+      - "./.aero/config/php-pool.conf:/etc/php/7.4/fpm/pool.d/99-user.conf"
+      - "./.aero/config/php-fpm.ini:/etc/php/7.4/fpm/conf.d/99-user.ini"
+      - "./.aero/config/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf"
     depends_on:
       - db
       - redis
       - elasticsearch
   db:
-    platform: "${PLATFORM}"
     image: mariadb:latest
     command: --max_allowed_packet=64M
     ports:
@@ -44,7 +43,6 @@ services:
       retries: 3
       timeout: 5s
   redis:
-    platform: "${PLATFORM}"
     image: redis:alpine
     ports:
       - "${REDIS_PORT:-6379}:6379"
@@ -57,7 +55,6 @@ services:
       retries: 3
       timeout: 5s
   elasticsearch:
-    platform: "${PLATFORM}"
     image: elasticsearch:7.17.0
     ports:
       - "${ES_PORT:-9200}:9200"
