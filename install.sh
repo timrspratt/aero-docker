@@ -14,7 +14,9 @@ fi
 rm -rf "$AERO_DOCKER_DIR"
 mkdir -p "$_/extract"
 cd "$_/.."
-wget https://github.com/timrspratt/aero-docker/archive/refs/heads/1.x.zip -qO docker.zip
+if ! wget https://github.com/timrspratt/aero-docker/archive/refs/heads/1.x.zip -qO docker.zip &> /dev/null; then
+    curl https://github.com/timrspratt/aero-docker/archive/refs/heads/1.x.zip -so docker.zip
+fi
 tar -xf docker.zip -C extract --strip-components=1
 shopt -s dotglob
 mv extract/compose/* ./
