@@ -102,11 +102,6 @@ DOCKER_COMPOSE_PATH=docker-compose.yml
 PROJECT_NAME=$(basename "$PWD")
 DOCKER_NAME="$PROJECT_NAME"
 
-if [[ "$DOCKER_NAME" =~ [^a-zA-Z0-9\ ] ]]; then
-    echo -e "${YELLOW}Directory name must consist of alphanumeric characters only.${NC}" >&2
-    exit 1
-fi
-
 if [ -f "$AERO_DOCKER_PATH/.aero/.env.example" ]; then
     source "$AERO_DOCKER_PATH/.aero/.env.example"
 fi
@@ -379,6 +374,10 @@ if [ $# -gt 0 ]; then
             echo -e "${YELLOW}A directory with this name already exists.${NC}"
             exit 1
         fi
+        if [[ "$1" =~ [^a-zA-Z0-9\ \-] ]]; then
+            echo -e "${YELLOW}Store name must consist of alphanumeric characters only.${NC}" >&2
+            exit 1
+        fi
         ensure_ports_are_available
         mkdir "$PWD/$1"
         cd "$_" || exit 1
@@ -390,11 +389,16 @@ if [ $# -gt 0 ]; then
             echo -e "${YELLOW}The current directory is already a project.${NC}"
             exit 1
         fi
+        if [[ "$PROJECT_NAME" =~ [^a-zA-Z0-9\ \-] ]]; then
+            echo -e "${YELLOW}Directory name must consist of alphanumeric characters only.${NC}" >&2
+            exit 1
+        fi
         ensure_compose_exists
         ensure_container_is_running true
         create_database aero
-        install_aero "$PROJECT_NAME"
-        install_theme "aero/raw" "--name=raw" "--no-interaction"
+        if install_aero "$PROJECT_NAME"; then
+            install_theme "aero/raw" "--name=raw" "--no-interaction"
+        fi
     elif [ "$1" == "setup" ]; then
         update_check
         if [ ! -f "$PWD/.env.example" ]; then

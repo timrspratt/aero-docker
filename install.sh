@@ -1,6 +1,6 @@
 #!/bin/bash
 set -o errexit
-AERO_DOCKER_DIR="$HOME/.aero-docker-2"
+AERO_DOCKER_DIR="$HOME/.aero-docker"
 if [ -f "$AERO_DOCKER_DIR/.env" ]; then
     cp -p "$AERO_DOCKER_DIR/.env" "$HOME/.env.aero-docker.temp"
 fi
