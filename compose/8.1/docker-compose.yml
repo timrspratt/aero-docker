@@ -26,7 +26,6 @@ services:
       - redis
       - elasticsearch
   db:
-    platform: "${PLATFORM}"
     image: mariadb:latest
     command: --max_allowed_packet=64M
     ports:
@@ -44,7 +43,6 @@ services:
       retries: 3
       timeout: 5s
   redis:
-    platform: "${PLATFORM}"
     image: redis:alpine
     ports:
       - "${REDIS_PORT:-6379}:6379"
@@ -57,7 +55,6 @@ services:
       retries: 3
       timeout: 5s
   elasticsearch:
-    platform: "${PLATFORM}"
     image: elasticsearch:7.17.0
     ports:
       - "${ES_PORT:-9200}:9200"

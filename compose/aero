@@ -189,6 +189,10 @@ function ensure_compose_exists {
             exit 1
         fi
     fi
+
+    if [ ! -d "$PWD/.aero" ]; then
+        cp -Rn "$AERO_DOCKER_PATH/$AERO_DOCKER_RUNTIME/.aero" "$PWD/.aero"
+    fi
 }
 
 function install_theme {

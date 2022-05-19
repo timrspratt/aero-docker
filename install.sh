@@ -24,7 +24,7 @@ if [ -f "$HOME/.env.aero-docker.temp" ]; then
     cp -p "$HOME/.env.aero-docker.temp" "$AERO_DOCKER_DIR/.env"
     rm -f "$HOME/.env.aero-docker.temp"
 else
-    cp "$AERO_DOCKER_DIR/.aero/.env.example" "$AERO_DOCKER_DIR/.env"
+    cp -n "$AERO_DOCKER_DIR/.env.example" "$AERO_DOCKER_DIR/.env"
 fi
 sudo ln -s "$(pwd)"/aero /usr/local/bin/aero
 if [ $# -eq 0 ]; then
