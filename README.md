@@ -51,18 +51,14 @@ Once the installation is complete, run the following command to seed the sample 
 aero catalog:seed
 ```
 
-🎉 Open your browser and navigate to `http://localhost` (if you've changed the `WEB_PORT` make sure to append this).
+Open your browser and navigate to `http://localhost`.
 
 ## Alternative Setup
 
 ### Existing Project
 
-There may be a time where you need to configure an existing project to run with Aero Docker.
-For example pulling a repository from GitHub to run locally.
-
-> **You will need to stop any containers running from other projects to ensure the port bindings do not clash.**
->
-> Alternatively, you can run `aero env:project` to publish and adjust the container configuration for this project.
+There may be a time you need to configure an existing project to run with Aero Docker.
+For example pulling a repository from GitHub to run locally that has not initially been configured using Aero Docker.
 
 Run the `aero setup` command from within the root directory of the project.
 
