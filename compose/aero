@@ -142,12 +142,23 @@ function ensure_docker_is_running {
 }
 
 function ensure_ports_are_available {
-    EXISTING_PORTS=$(lsof -nP -iTCP:"$WEB_PORT" -iTCP:"$DB_PORT" -iTCP:"$REDIS_PORT" -iTCP:"$ES_PORT" -sTCP:LISTEN | awk '{print $9}' | grep -E -o ":\d+$" | uniq)
+    PORT_REGEX=":$WEB_PORT-|:$DB_PORT-|:$REDIS_PORT-|:$ES_PORT-"
+    EXISTING_PORTS=$(docker ps --format="{{.Ports}}" | grep -E -o ":\d+-" | grep -E "$PORT_REGEX" 2> /dev/null | grep -E -o ":\d+-")
+    unset PORT_REGEX
     if [ -n "$EXISTING_PORTS" ]; then
         echo -e "${RED}The following ports are already in use:${NC}" >&2
-        echo "$EXISTING_PORTS" | grep -E -o '\d+' | sort
+        echo "$EXISTING_PORTS" | grep -E -o '\d+' | sort | uniq
+        unset EXISTING_PORTS
         exit 1
     fi
+    EXISTING_PORTS=$(lsof -nP -iTCP:"$WEB_PORT" -iTCP:"$DB_PORT" -iTCP:"$REDIS_PORT" -iTCP:"$ES_PORT" -sTCP:LISTEN 2> /dev/null | awk '{print $9}' | grep -E -o ":\d+$")
+    if [ -n "$EXISTING_PORTS" ]; then
+        echo -e "${RED}The following ports are already in use:${NC}" >&2
+        echo "$EXISTING_PORTS" | grep -E -o '\d+' | sort | uniq
+        unset EXISTING_PORTS
+        exit 1
+    fi
+    unset EXISTING_PORTS
 }
 
 function ensure_container_is_running {
@@ -165,6 +176,8 @@ function ensure_container_is_running {
     else
         EXEC="no"
     fi
+
+    unset PSRESULT
 
     if [ $EXEC == "no" ]; then
         if [ $# -eq 0 ]; then
