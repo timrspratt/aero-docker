@@ -15,15 +15,16 @@ fi
 rm -rf "$AERO_DOCKER_DIR"
 mkdir -p "$_/extract"
 cd "$_/.."
-if ! wget https://github.com/timrspratt/aero-docker/archive/refs/heads/1.x.zip -qO docker.zip &> /dev/null; then
-    curl https://github.com/timrspratt/aero-docker/archive/refs/heads/1.x.zip -Lso docker.zip
+if ! wget https://github.com/timrspratt/aero-docker/archive/refs/heads/1.x.tar.gz -qO docker.tar.gz &> /dev/null; then
+    curl https://github.com/timrspratt/aero-docker/archive/refs/heads/1.x.tar.gz -Lso docker.tar.gz
 fi
-if ! tar -xf docker.zip -C extract --strip-components=1; then
+if ! tar -xf docker.tar.gz -C extract --strip-components=1; then
     echo -e "${RED}There was a problem downloading the required files.${NC}" >&2
+    exit 1
 fi
 shopt -s dotglob
 mv extract/compose/* ./
-rm -rf extract docker.zip
+rm -rf extract docker.tar.gz
 sudo rm -rf /usr/local/bin/aero
 if [ -f "$HOME/.env.aero-docker.temp" ]; then
     cp -p "$HOME/.env.aero-docker.temp" "$AERO_DOCKER_DIR/.env"
