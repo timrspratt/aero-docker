@@ -32,6 +32,7 @@ if test -t 1; then
 
     if test -n "$ncolors" && test "$ncolors" -ge 8; then
         BOLD="$(tput bold)"
+        RED="$(tput setaf 1)"
         YELLOW="$(tput setaf 3)"
         GREEN="$(tput setaf 2)"
         NC="$(tput sgr0)"
@@ -135,17 +136,16 @@ function docker_compose {
 
 function ensure_docker_is_running {
     if ! docker info > /dev/null 2>&1; then
-        echo -e "${YELLOW}Docker is not running.${NC}" >&2
+        echo -e "${RED}Docker is not running.${NC}" >&2
         exit 1
     fi
 }
 
 function ensure_ports_are_available {
-    EXISTING_PORTS=$(lsof -nP -iTCP:"$WEB_PORT" -iTCP:"$DB_PORT" -iTCP:"$REDIS_PORT" -iTCP:"$ES_PORT" -sTCP:LISTEN | awk '{print $9}' | uniq | grep -E -o ":\d+")
+    EXISTING_PORTS=$(lsof -nP -iTCP:"$WEB_PORT" -iTCP:"$DB_PORT" -iTCP:"$REDIS_PORT" -iTCP:"$ES_PORT" -sTCP:LISTEN | awk '{print $9}' | grep -E -o ":\d+$" | uniq)
     if [ -n "$EXISTING_PORTS" ]; then
-        echo -e "${YELLOW}The following ports are already in use:${NC}" >&2
+        echo -e "${RED}The following ports are already in use:${NC}" >&2
         echo "$EXISTING_PORTS" | grep -E -o '\d+' | sort
-
         exit 1
     fi
 }
@@ -168,7 +168,7 @@ function ensure_container_is_running {
 
     if [ $EXEC == "no" ]; then
         if [ $# -eq 0 ]; then
-            echo -e "${YELLOW}The application containers must be up and running to continue.${NC}" >&2
+            echo -e "${RED}The application containers must be up and running to continue.${NC}" >&2
             echo -e "Run the command \`aero start\` and try again."
             exit 1
         else
@@ -185,7 +185,7 @@ function ensure_compose_exists {
         if [ -f "$AERO_DOCKER_PATH/$AERO_DOCKER_RUNTIME/docker-compose.yml" ]; then
             cp "$AERO_DOCKER_PATH/$AERO_DOCKER_RUNTIME/docker-compose.yml" "$PWD/docker-compose.yml"
         else
-            echo -e "${YELLOW}Invalid runtime.${NC}" >&2
+            echo -e "${RED}Invalid runtime.${NC}" >&2
             exit 1
         fi
     fi
@@ -197,7 +197,7 @@ function ensure_compose_exists {
 
 function install_theme {
     if [ $# -eq 0 ]; then
-        echo -e "${YELLOW}Not enough arguments (missing: \"theme name\").${NC}" >&2
+        echo -e "${RED}Not enough arguments (missing: \"theme name\").${NC}" >&2
         exit 1
     fi
 
@@ -208,7 +208,7 @@ function install_theme {
 
 function install_aero {
     if [ $# -eq 0 ]; then
-        echo -e "${YELLOW}Not enough arguments (missing: \"project name\").${NC}" >&2
+        echo -e "${RED}Not enough arguments (missing: \"project name\").${NC}" >&2
         exit 1
     fi
 
@@ -233,7 +233,7 @@ function install_aero {
 
 function configure_aero {
     if [ $# -eq 0 ]; then
-        echo -e "${YELLOW}Not enough arguments (missing: \"project name\").${NC}" >&2
+        echo -e "${RED}Not enough arguments (missing: \"project name\").${NC}" >&2
         exit 1
     fi
 
@@ -275,7 +275,7 @@ function wait_for_db {
 
 function create_database {
     if [ $# -eq 0 ]; then
-        echo -e "${YELLOW}Not enough arguments (missing: \"database name\").${NC}" >&2
+        echo -e "${RED}Not enough arguments (missing: \"database name\").${NC}" >&2
         exit 1
     fi
 
@@ -287,7 +287,7 @@ function create_database {
     then
         echo -e "${GREEN}Database created.${NC}"
     else
-        echo -e "${YELLOW}There was a problem creating the database.${NC}"
+        echo -e "${RED}There was a problem creating the database.${NC}"
         exit 1
     fi
 }
@@ -363,15 +363,15 @@ if [ $# -gt 0 ]; then
         update_check
         shift 1
         if [ $# -eq 0 ]; then
-            echo -e "${YELLOW}Not enough arguments (missing: \"store name\").${NC}" >&2
+            echo -e "${RED}Not enough arguments (missing: \"store name\").${NC}" >&2
             exit 1
         fi
         if [ -d "$PWD/$1" ]; then
-            echo -e "${YELLOW}A directory with this name already exists.${NC}"
+            echo -e "${RED}A directory with this name already exists.${NC}"
             exit 1
         fi
         if [[ "$1" =~ [^a-zA-Z0-9\ \-] ]]; then
-            echo -e "${YELLOW}Store name must consist of alphanumeric characters only.${NC}" >&2
+            echo -e "${RED}Store name must consist of alphanumeric characters only.${NC}" >&2
             exit 1
         fi
         ensure_ports_are_available
@@ -382,11 +382,11 @@ if [ $# -gt 0 ]; then
     elif [ "$1" == "install" ]; then
         update_check
         if [ -f "$PWD/artisan" ]; then
-            echo -e "${YELLOW}The current directory is already a project.${NC}"
+            echo -e "${RED}The current directory is already a project.${NC}"
             exit 1
         fi
         if [[ "$PROJECT_NAME" =~ [^a-zA-Z0-9\ \-] ]]; then
-            echo -e "${YELLOW}Directory name must consist of alphanumeric characters only.${NC}" >&2
+            echo -e "${RED}Directory name must consist of alphanumeric characters only.${NC}" >&2
             exit 1
         fi
         ensure_compose_exists
@@ -398,11 +398,11 @@ if [ $# -gt 0 ]; then
     elif [ "$1" == "setup" ]; then
         update_check
         if [ ! -f "$PWD/.env.example" ]; then
-            echo -e "${YELLOW}The current directory is not a compatible project.${NC}"
+            echo -e "${RED}The current directory is not a compatible project.${NC}"
             exit 1
         fi
         if [ -f "$PWD/.env" ]; then
-            echo -e "${YELLOW}The project appears to already have been setup.${NC}"
+            echo -e "${RED}The project appears to already have been setup.${NC}"
             exit 1
         fi
         ensure_compose_exists
@@ -431,7 +431,7 @@ if [ $# -gt 0 ]; then
         then
             echo -e "${GREEN}Updated!${NC}" >&2
         else
-            echo -e "${YELLOW}There was a problem updating.${NC}" >&2
+            echo -e "${RED}There was a problem updating.${NC}" >&2
             exit 1
         fi
     else

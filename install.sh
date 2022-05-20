@@ -5,6 +5,7 @@ if [ -f "$AERO_DOCKER_DIR/.env" ]; then
     cp -p "$AERO_DOCKER_DIR/.env" "$HOME/.env.aero-docker.temp"
 fi
 WHITE='\033[0;37m'
+RED='\033[0;31m'
 YELLOW='\033[0;33m'
 GREEN='\033[0;32m'
 NC='\033[0m'
@@ -17,7 +18,9 @@ cd "$_/.."
 if ! wget https://github.com/timrspratt/aero-docker/archive/refs/heads/1.x.zip -qO docker.zip &> /dev/null; then
     curl https://github.com/timrspratt/aero-docker/archive/refs/heads/1.x.zip -Lso docker.zip
 fi
-tar -xf docker.zip -C extract --strip-components=1
+if ! tar -xf docker.zip -C extract --strip-components=1; then
+    echo -e "${RED}There was a problem downloading the required files.${NC}" >&2
+fi
 shopt -s dotglob
 mv extract/compose/* ./
 rm -rf extract docker.zip
