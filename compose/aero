@@ -147,14 +147,14 @@ function ensure_ports_are_available {
     unset PORT_REGEX
     if [ -n "$EXISTING_PORTS" ]; then
         echo -e "${RED}The following ports are already in use:${NC}" >&2
-        echo "$EXISTING_PORTS" | grep -E -o '[0-9]+' | sort | uniq
+        echo "$EXISTING_PORTS" | grep -E -o '[0-9]+' | sort -g | uniq
         unset EXISTING_PORTS
         exit 1
     fi
     EXISTING_PORTS=$(lsof -nP -iTCP:"$WEB_PORT" -iTCP:"$DB_PORT" -iTCP:"$REDIS_PORT" -iTCP:"$ES_PORT" -sTCP:LISTEN 2> /dev/null | awk '{print $9}' | grep -E -o ":[0-9]+$")
     if [ -n "$EXISTING_PORTS" ]; then
         echo -e "${RED}The following ports are already in use:${NC}" >&2
-        echo "$EXISTING_PORTS" | grep -E -o '[0-9]+' | sort | uniq
+        echo "$EXISTING_PORTS" | grep -E -o '[0-9]+' | sort -g | uniq
         unset EXISTING_PORTS
         exit 1
     fi
