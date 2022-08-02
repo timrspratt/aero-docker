@@ -235,7 +235,7 @@ function install_aero {
         -e DB_USERNAME="$DB_USERNAME" \
         -e DB_PASSWORD="$DB_PASSWORD" \
         -e ELASTICSEARCH_CONNECTION=elasticsearch:9200 \
-        app bash -ic "composer global require aerocommerce/cli:dev-master && aero new $1 --next --no-interaction;";
+        app bash -ic "composer global require aerocommerce/cli:dev-master && aero new $1 --next;";
     then
         shopt -s dotglob
         mv "./$1" ./__tmp
