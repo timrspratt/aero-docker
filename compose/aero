@@ -11,7 +11,7 @@ AERO_DOCKER_VERSION=$(cat "$AERO_DOCKER_PATH/.version")
 if [ -f "$AERO_DOCKER_PATH/.runtime" ]; then
     AERO_DOCKER_RUNTIME=$(cat "$AERO_DOCKER_PATH/.runtime")
 else
-    AERO_DOCKER_RUNTIME=7.4
+    AERO_DOCKER_RUNTIME=8.1
 fi
 
 UNAMEOUT="$(uname -s)"
@@ -180,6 +180,7 @@ function ensure_container_is_running {
     unset PSRESULT
 
     if [ $EXEC == "no" ]; then
+        unset EXEC
         if [ $# -eq 0 ]; then
             echo -e "${RED}The application containers must be up and running to continue.${NC}" >&2
             echo -e "Run the command \`aero start\` and try again."
@@ -191,6 +192,8 @@ function ensure_container_is_running {
             ensure_container_is_running
         fi
     fi
+
+    unset EXEC
 }
 
 function ensure_compose_exists {
@@ -232,7 +235,7 @@ function install_aero {
         -e DB_USERNAME="$DB_USERNAME" \
         -e DB_PASSWORD="$DB_PASSWORD" \
         -e ELASTICSEARCH_CONNECTION=elasticsearch:9200 \
-        app bash -ic "composer global require aerocommerce/cli:dev-master && aero new $1 --next;";
+        app bash -ic "composer global require aerocommerce/cli:dev-master && aero new $1 --next --no-interaction;";
     then
         shopt -s dotglob
         mv "./$1" ./__tmp
@@ -373,7 +376,6 @@ if [ $# -gt 0 ]; then
         shift 1
         docker_compose exec db bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" $@"
     elif [ "$1" == "new" ]; then
-        update_check
         shift 1
         if [ $# -eq 0 ]; then
             echo -e "${RED}Not enough arguments (missing: \"store name\").${NC}" >&2
@@ -406,7 +408,7 @@ if [ $# -gt 0 ]; then
         ensure_container_is_running true
         create_database aero
         if install_aero "$PROJECT_NAME"; then
-            install_theme "aero/raw" "--name=raw" "--no-interaction"
+            install_theme "aero/skeleton" "--name=skeleton" "--no-interaction"
         fi
     elif [ "$1" == "setup" ]; then
         update_check

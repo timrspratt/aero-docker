@@ -59,8 +59,6 @@ services:
     ports:
       - "${ES_PORT:-9200}:9200"
     environment:
-      - node.name=es01
-      - cluster.name=es-docker-cluster
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms${ES_MEMORY:-512}m -Xmx${ES_MEMORY:-512}m"
@@ -71,7 +69,7 @@ services:
     networks:
       - aero
     healthcheck:
-      test: [CMD, wget, "--no-verbose", "--spider", "http://localhost:${ES_PORT:-9200}"]
+      test: [CMD, wget, "--no-verbose", "--spider", "http://localhost:9200"]
       retries: 3
       timeout: 5s
 networks:
