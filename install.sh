@@ -10,7 +10,11 @@ YELLOW='\033[0;33m'
 GREEN='\033[0;32m'
 NC='\033[0m'
 if ! sudo -n true 2>/dev/null; then
+  if [ $# -eq 0 ]; then
     echo -e "${YELLOW}Please provide your password so the global \`aero\` command can be installed.${NC}" >&2
+  else
+    echo -e "${YELLOW}Please provide your password so the global \`aero\` command can be updated.${NC}" >&2
+  fi
 fi
 rm -rf "$AERO_DOCKER_DIR"
 mkdir -p "$_/extract"

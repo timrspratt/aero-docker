@@ -279,7 +279,7 @@ function configure_aero {
 
 function wait_for_db {
     if docker_compose exec db \
-        bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"1SHOW DATABASES;\" > /dev/null" 2&>1 /dev/null;
+        bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"SHOW DATABASES;\" > /dev/null" 2&>1 /dev/null;
     then
         sleep 1
     else
