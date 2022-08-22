@@ -279,7 +279,7 @@ function configure_aero {
 
 function wait_for_db {
     if docker_compose exec db \
-        bash -ic "mysqladmin --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" ping > /dev/null";
+        bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"1SHOW DATABASES;\" > /dev/null" 2&>1 /dev/null;
     then
         sleep 1
     else
@@ -309,8 +309,14 @@ function create_database {
 }
 
 function seed_catalog {
+    case "$1" in
+        furniture*)         SEED_CSV="furniture.csv";;
+        fashion*)           SEED_CSV="products.csv";;
+        *)                  SEED_CSV="products.csv"
+    esac
+
     docker_compose exec -u user \
-            app bash -ic "php artisan aero:import:products:csv https://aero-data.s3.eu-west-2.amazonaws.com/products.csv"
+            app bash -ic "php artisan aero:import:products:csv https://aero-data.s3.eu-west-2.amazonaws.com/${SEED_CSV}"
 }
 
 function edit_env_defaults {
@@ -431,7 +437,7 @@ if [ $# -gt 0 ]; then
     elif [ "$1" == "catalog:seed" ]; then
         update_check
         ensure_container_is_running
-        seed_catalog
+        seed_catalog "$@"
     elif [ "$1" == "env:defaults" ]; then
         update_check
         edit_env_defaults
