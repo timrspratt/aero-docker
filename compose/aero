@@ -141,6 +141,13 @@ function ensure_docker_is_running {
     fi
 }
 
+function ensure_image_is_built {
+    if ! docker images "aero/$AERO_DOCKER_RUNTIME" > /dev/null 2>&1 | grep "aero" > /dev/null 2>&1; then
+        echo -e "${YELLOW}Building images.${NC}" >&2
+        docker build -t "aero/$AERO_DOCKER_RUNTIME" ./aero
+    fi
+}
+
 function ensure_ports_are_available {
     PORT_REGEX=":$WEB_PORT-|:$DB_PORT-|:$REDIS_PORT-|:$ES_PORT-"
     EXISTING_PORTS=$(docker ps --format="{{.Ports}}" | grep -E -o ":[0-9]+-" | grep -E "$PORT_REGEX" 2> /dev/null)
@@ -411,6 +418,7 @@ if [ $# -gt 0 ]; then
             exit 1
         fi
         ensure_compose_exists
+        ensure_image_is_built
         ensure_container_is_running true
         create_database aero
         if install_aero "$PROJECT_NAME"; then
