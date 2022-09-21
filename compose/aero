@@ -144,7 +144,7 @@ function ensure_docker_is_running {
 function ensure_image_is_built {
     if ! docker images "aero/$AERO_DOCKER_RUNTIME" > /dev/null 2>&1 | grep "aero" > /dev/null 2>&1; then
         echo -e "${YELLOW}Building images.${NC}" >&2
-        docker build -t "aero/$AERO_DOCKER_RUNTIME" ./aero
+        docker build -t "aero/$AERO_DOCKER_RUNTIME" ./.aero
     fi
 }
 
