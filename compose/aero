@@ -445,6 +445,7 @@ if [ $# -gt 0 ]; then
     elif [ "$1" == "catalog:seed" ]; then
         update_check
         ensure_container_is_running
+        shift 1
         seed_catalog "$@"
     elif [ "$1" == "env:defaults" ]; then
         update_check
