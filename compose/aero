@@ -131,7 +131,7 @@ function update_check {
 }
 
 function docker_compose {
-    docker-compose -p "$DOCKER_NAME" "$@"
+    docker compose -p "$DOCKER_NAME" "$@"
 }
 
 function ensure_docker_is_running {
