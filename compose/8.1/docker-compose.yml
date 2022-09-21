@@ -23,16 +23,16 @@ services:
       - "./.aero/config/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf"
     depends_on:
       - db
-      - redis
-      - elasticsearch
+      - cache
+      - search
   db:
-    image: mariadb:latest
+    image: mysql:8
     command: --max_allowed_packet=64M
     ports:
       - "${DB_PORT:-3306}:3306"
     environment:
-      MYSQL_USER: "${DB_USERNAME:-root}"
-      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ROOT_HOST: "%"
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
     volumes:
       - db:/var/lib/mysql
@@ -42,19 +42,19 @@ services:
       test: [CMD, mysqladmin, ping, "-p${DB_PASSWORD}"]
       retries: 3
       timeout: 5s
-  redis:
+  cache:
     image: redis:alpine
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
-      - redis:/data
+      - cache:/data
     networks:
       - aero
     healthcheck:
       test: [CMD, redis-cli, ping]
       retries: 3
       timeout: 5s
-  elasticsearch:
+  search:
     image: elasticsearch:7.17.0
     ports:
       - "${ES_PORT:-9200}:9200"
@@ -65,7 +65,7 @@ services:
     ulimits:
       memlock: { soft: -1, hard: -1 }
     volumes:
-      - elasticsearch:/usr/share/elasticsearch/data
+      - search:/usr/share/elasticsearch/data
     networks:
       - aero
     healthcheck:
@@ -78,7 +78,7 @@ networks:
 volumes:
   db:
     driver: local
-  redis:
+  cache:
     driver: local
-  elasticsearch:
+  search:
     driver: local

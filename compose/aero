@@ -142,9 +142,9 @@ function ensure_docker_is_running {
 }
 
 function ensure_image_is_built {
-    if ! docker images "aero/$AERO_DOCKER_RUNTIME" > /dev/null 2>&1 | grep "aero" > /dev/null 2>&1; then
+    if ! docker images "aero/$AERO_DOCKER_RUNTIME" | grep "aero" > /dev/null 2>&1; then
         echo -e "${YELLOW}Building images.${NC}" >&2
-        docker_compose build
+        docker_compose build app
     fi
 }
 
@@ -237,11 +237,11 @@ function install_aero {
 
     if docker_compose exec -u user \
         -e CONNECTIONS_DEFINED=true \
-        -e DB_HOST=db \
+        -e DB_HOST="${DB_HOST:-db}" \
         -e DB_DATABASE="$DB_DATABASE" \
         -e DB_USERNAME="$DB_USERNAME" \
         -e DB_PASSWORD="$DB_PASSWORD" \
-        -e ELASTICSEARCH_CONNECTION=elasticsearch:9200 \
+        -e ELASTICSEARCH_CONNECTION="${ES_CONNECTION:-search:9200}" \
         app bash -ic "composer global require aerocommerce/cli:dev-master && aero new $1 --next;";
     then
         shopt -s dotglob
@@ -271,11 +271,11 @@ function configure_aero {
 
     if docker_compose exec -u user \
         -e CONNECTIONS_DEFINED=true \
-        -e DB_HOST=db \
+        -e DB_HOST="${DB_HOST:-db}" \
         -e DB_DATABASE="$DB_DATABASE" \
         -e DB_USERNAME="$DB_USERNAME" \
         -e DB_PASSWORD="$DB_PASSWORD" \
-        -e ELASTICSEARCH_CONNECTION=elasticsearch:9200 \
+        -e ELASTICSEARCH_CONNECTION="${ES_CONNECTION:-search:9200}" \
         app bash -ic "php artisan aero:configure --no-interaction;";
     then
         docker_compose exec -u user app bash -ic " php artisan key:generate && php artisan aero:install --seed"
@@ -286,7 +286,7 @@ function configure_aero {
 
 function wait_for_db {
     if docker_compose exec db \
-        bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"SHOW DATABASES;\" > /dev/null" 2&>1 /dev/null;
+        bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"SHOW DATABASES;\" > /dev/null" > /dev/null 2>&1;
     then
         sleep 1
     else
@@ -306,7 +306,7 @@ function create_database {
 
     DB_DATABASE="$1"
     if docker_compose exec db \
-        bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"CREATE DATABASE IF NOT EXISTS \\\`$DB_DATABASE\\\` CHARACTER SET utf8 COLLATE utf8_unicode_ci;\"";
+        bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"CREATE DATABASE IF NOT EXISTS \\\`$DB_DATABASE\\\` CHARACTER SET utf8 COLLATE utf8_unicode_ci;\"" > /dev/null 2>&1;
     then
         echo -e "${GREEN}Database created.${NC}"
     else
