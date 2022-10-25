@@ -286,13 +286,13 @@ function configure_aero {
 
 function wait_for_db {
     if docker_compose exec db \
-        bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"SHOW DATABASES;\"" > /dev/null 2>&1;
+        bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"$*\"" > /dev/null 2>&1;
     then
         sleep 1
     else
         echo -e "${YELLOW}Waiting for database.${NC}" >&2
         sleep 2
-        wait_for_db
+        wait_for_db "$*"
     fi
 }
 
@@ -302,17 +302,10 @@ function create_database {
         exit 1
     fi
 
-    wait_for_db
-
     DB_DATABASE="$1"
-    if docker_compose exec db \
-        bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"CREATE DATABASE IF NOT EXISTS \\\`$DB_DATABASE\\\` CHARACTER SET utf8 COLLATE utf8_unicode_ci;\"" > /dev/null 2>&1;
-    then
-        echo -e "${GREEN}Database created.${NC}"
-    else
-        echo -e "${RED}There was a problem creating the database.${NC}"
-        exit 1
-    fi
+    wait_for_db "CREATE DATABASE IF NOT EXISTS \\\`$DB_DATABASE\\\` CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
+
+    echo -e "${GREEN}Database created.${NC}"
 }
 
 function seed_catalog {
