@@ -38,7 +38,7 @@ curl -s https://raw.githubusercontent.com/timrspratt/aero-docker/1.x/install.sh 
 ### Project Setup & Installation
 
 Run the `aero new` command to start the installation.
-During the install process, you'll need to provide project credentials, which can be obtained from
+During the installation process, you'll need to provide project credentials, which can be obtained from
 [Agora](https://agora.aerocommerce.com/projects).
 
 ```bash
@@ -48,8 +48,12 @@ aero new {store_name}
 Once the installation is complete, run the following command to seed the sample product catalog (if needed):
 
 ```bash
-aero catalog:seed
+aero seed {industry}
 ```
+
+Available values for `industry`:
+- `fashion`
+- `furniture`
 
 Open your browser and navigate to `http://localhost`.
 

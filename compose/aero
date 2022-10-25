@@ -59,8 +59,8 @@ function display_help {
     echo "${YELLOW}Onboarding Commands:${NC}"
     echo "  ${GREEN}aero install${NC}                   Install and setup an new Aero store in the current directory"
     echo "  ${GREEN}aero setup${NC}                     Setup the current project to run through Aero Docker"
-    echo "  ${GREEN}aero catalog:seed${NC}              Seed the sample catalog to the current Aero store"
-    echo "  ${GREEN}aero theme:install ...${NC}         Setup the current project to run through Aero Docker"
+    echo "  ${GREEN}aero seed${NC}                      Seed the current Aero store with sample data"
+    echo "  ${GREEN}aero theme:install ...${NC}         Install a theme for the current Aero store"
     echo
     echo "${YELLOW}Artisan Commands:${NC}"
     echo "  ${GREEN}aero artisan ...${NC}               Run an Artisan command"
@@ -224,7 +224,7 @@ function install_theme {
         exit 1
     fi
 
-    COMMAND="php artisan theme:install $@;"
+    COMMAND="php artisan theme:install $*;"
 
     docker_compose exec -u user app bash -ic "$COMMAND"
 }
@@ -286,7 +286,7 @@ function configure_aero {
 
 function wait_for_db {
     if docker_compose exec db \
-        bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"SHOW DATABASES;\" > /dev/null" > /dev/null 2>&1;
+        bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" -e \"SHOW DATABASES;\"" > /dev/null 2>&1;
     then
         sleep 1
     else
@@ -324,6 +324,12 @@ function seed_catalog {
 
     docker_compose exec -u user \
             app bash -ic "php artisan aero:import:products:csv https://aero-data.s3.eu-west-2.amazonaws.com/${SEED_CSV}"
+    docker_compose exec -u user \
+            app bash -ic "php artisan aero:import:blocks:csv https://aero-data.s3.eu-west-2.amazonaws.com/blocks/${SEED_CSV}"
+}
+
+function artisan_command {
+    docker_compose exec -u user app php artisan "$@"
 }
 
 function edit_env_defaults {
@@ -372,7 +378,7 @@ if [ $# -gt 0 ]; then
         update_check
         ensure_container_is_running
         shift 1
-        docker_compose exec -u user app php artisan "$@"
+        artisan_command "$@"
     elif [ "$1" == "queue" ]; then
             update_check
             ensure_container_is_running
@@ -387,7 +393,7 @@ if [ $# -gt 0 ]; then
         update_check
         ensure_container_is_running
         shift 1
-        docker_compose exec db bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" $@"
+        docker_compose exec db bash -ic "mysql --user=\"\$DB_USERNAME\" --password=\"\$DB_PASSWORD\" $*"
     elif [ "$1" == "new" ]; then
         shift 1
         if [ $# -eq 0 ]; then
@@ -442,11 +448,12 @@ if [ $# -gt 0 ]; then
         ensure_container_is_running
         shift 1
         install_theme "$@"
-    elif [ "$1" == "catalog:seed" ]; then
+    elif [ "$1" == "seed" ]; then
         update_check
         ensure_container_is_running
         shift 1
         seed_catalog "$@"
+        artisan_command cache:clear
     elif [ "$1" == "env:defaults" ]; then
         update_check
         edit_env_defaults
