@@ -379,7 +379,7 @@ if [ $# -gt 0 ]; then
             update_check
             ensure_container_is_running
             shift 1
-            docker_compose exec -u user app php artisan queue:work --queue=default,search,email,subscriptions --timeout=0
+            artisan_command queue:work --queue=default,search,email,subscriptions --timeout=0
     elif [ "$1" == "shell" ] || [ "$1" == "bash" ]; then
         update_check
         ensure_container_is_running
