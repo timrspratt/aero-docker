@@ -315,8 +315,11 @@ function seed_catalog {
         *)                  SEED_CSV="products.csv"
     esac
 
+    echo -e "${NC}Seeding catalog data.${NC}\n" >&2
     docker_compose exec -u user \
             app bash -ic "php artisan aero:import:products:csv https://aero-data.s3.eu-west-2.amazonaws.com/${SEED_CSV}"
+
+    echo -e "\n\n${NC}Seeding block data.${NC}\n" >&2
     docker_compose exec -u user \
             app bash -ic "php artisan aero:import:blocks:csv https://aero-data.s3.eu-west-2.amazonaws.com/blocks/${SEED_CSV}"
 }
@@ -421,8 +424,10 @@ if [ $# -gt 0 ]; then
         ensure_container_is_running true
         create_database aero
         if install_aero "$PROJECT_NAME"; then
+            echo -e "\n${BOLD}Installing theme.${NC}\n" >&2
             install_theme "aero/skeleton" "--name=skeleton" "--no-interaction"
         fi
+        echo -e "\n${GREEN}Done.${NC}\n" >&2
     elif [ "$1" == "setup" ]; then
         update_check
         if [ ! -f "$PWD/.env.example" ]; then
@@ -436,6 +441,7 @@ if [ $# -gt 0 ]; then
         ensure_compose_exists
         ensure_container_is_running true
         configure_aero "$PROJECT_NAME"
+        echo -e "\n${GREEN}Done.${NC}\n" >&2
     elif [ "$1" == "theme:install" ]; then
         update_check
         ensure_container_is_running
@@ -446,7 +452,9 @@ if [ $# -gt 0 ]; then
         ensure_container_is_running
         shift 1
         seed_catalog "$@"
+        echo -e "\n\n${NC}Clearing cache.${NC}\n" >&2
         artisan_command cache:clear
+        echo -e "\n${GREEN}Done.${NC}\n" >&2
     elif [ "$1" == "env:defaults" ]; then
         update_check
         edit_env_defaults
