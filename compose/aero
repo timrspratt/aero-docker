@@ -14,6 +14,12 @@ else
     AERO_DOCKER_RUNTIME=8.1
 fi
 
+if [ -f "$AERO_DOCKER_PATH/.laravel" ]; then
+    AERO_LARAVEL_VERSION=$(cat "$AERO_DOCKER_PATH/.laravel")
+else
+    AERO_LARAVEL_VERSION=9
+fi
+
 UNAMEOUT="$(uname -s)"
 
 case "${UNAMEOUT}" in
@@ -242,7 +248,7 @@ function install_aero {
         -e DB_USERNAME="$DB_USERNAME" \
         -e DB_PASSWORD="$DB_PASSWORD" \
         -e ELASTICSEARCH_CONNECTION="${ES_CONNECTION:-search:9200}" \
-        app bash -ic "composer global require aerocommerce/cli:dev-master && aero new $1 --next;";
+        app bash -ic "composer global require aerocommerce/cli:dev-master && aero new $1 --next --laravel=$AERO_LARAVEL_VERSION;";
     then
         shopt -s dotglob
         mv "./$1" ./__tmp
