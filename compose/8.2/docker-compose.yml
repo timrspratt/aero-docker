@@ -55,7 +55,7 @@ services:
       retries: 3
       timeout: 5s
   search:
-    image: elasticsearch:7.17.0
+    image: elasticsearch:7.17.10
     ports:
       - "${ES_PORT:-9200}:9200"
     environment:
