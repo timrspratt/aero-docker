@@ -72,6 +72,13 @@ services:
       test: [CMD, wget, "--no-verbose", "--spider", "http://localhost:9200"]
       retries: 3
       timeout: 5s
+  mailpit:
+    image: 'axllent/mailpit:latest'
+    ports:
+      - '${MAILPIT_PORT:-1025}:1025'
+      - '${MAILPIT_DASHBOARD_PORT:-8025}:8025'
+    networks:
+      - aero
 networks:
   aero:
     driver: bridge
