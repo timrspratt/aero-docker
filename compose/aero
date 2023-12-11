@@ -11,7 +11,7 @@ AERO_DOCKER_VERSION=$(cat "$AERO_DOCKER_PATH/.version")
 if [ -f "$AERO_DOCKER_PATH/.runtime" ]; then
     AERO_DOCKER_RUNTIME=$(cat "$AERO_DOCKER_PATH/.runtime")
 else
-    AERO_DOCKER_RUNTIME=8.2
+    AERO_DOCKER_RUNTIME=8.3
 fi
 
 if [ -f "$AERO_DOCKER_PATH/.laravel" ]; then
